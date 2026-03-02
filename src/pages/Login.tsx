@@ -1,0 +1,125 @@
+import { useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('builder'); // Pievienots arods/loma
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      if (isSignUp) {
+        // Reģistrācija ar meta-datiem (arods)
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              role: role 
+            }
+          }
+        });
+        if (error) throw error;
+        alert(`Reģistrācija veiksmīga! Kā ${role} tev tiks piešķirta atbilstoša 3D būdiņa izstādē. Pārbaudi e-pastu.`);
+        setIsSignUp(false);
+      } else {
+        // Ielogošanās
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate('/kalkulators');
+      }
+    } catch (error: any) {
+      setErrorMsg(error.message || "Radās kļūda autentifikācijā.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: '400px', margin: '80px auto', padding: '40px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}>
+      <h1 style={{ fontSize: '28px', marginBottom: '10px', textAlign: 'center', color: '#0f172a', fontWeight: 800 }}>
+        {isSignUp ? 'Reģistrēt Uzņēmumu' : 'Ielogoties Sistēmā'}
+      </h1>
+      
+      {isSignUp && (
+        <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '20px', fontSize: '0.9rem' }}>
+          Iegūsti savu vietu Metaversā un sāc pārdot.
+        </p>
+      )}
+
+      {errorMsg && (
+        <div style={{ padding: '12px', background: '#fee2e2', color: '#b91c1c', borderRadius: '6px', marginBottom: '20px', fontSize: '0.9rem', border: '1px solid #fca5a5' }}>
+          {errorMsg}
+        </div>
+      )}
+
+      <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        
+        {isSignUp && (
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
+            Uzņēmuma nozare / Tavs Arods
+            <select 
+              value={role} 
+              onChange={(e) => setRole(e.target.value)}
+              style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem', background: '#f8fafc', outline: 'none' }}
+            >
+              <option value="builder">Būvniecība un Apdare</option>
+              <option value="architect">Arhitektūra un Dizains</option>
+              <option value="materials">Būvmateriālu Tirdzniecība</option>
+              <option value="real_estate">Nekustamo Īpašumu Aģents</option>
+              <option value="services">Juridiskie un Citi Pakalpojumi</option>
+            </select>
+          </label>
+        )}
+
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
+          E-pasts
+          <input 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+          />
+        </label>
+        
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
+          Parole
+          <input 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
+          />
+        </label>
+        
+        <button type="submit" disabled={isLoading} style={{ marginTop: '10px', padding: '15px', fontSize: '1.1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>
+          {isLoading ? 'Lūdzu uzgaidiet...' : (isSignUp ? 'Reģistrēties' : 'Ielogoties')}
+        </button>
+      </form>
+
+      <div style={{ marginTop: '25px', textAlign: 'center', fontSize: '0.95rem', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+        {isSignUp ? 'Jau ir izveidots stends? ' : 'Vēl neesi Metaversā? '}
+        <button 
+          onClick={() => setIsSignUp(!isSignUp)} 
+          style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+        >
+          {isSignUp ? 'Ielogoties' : 'Izveidot Stendu'}
+        </button>
+      </div>
+    </div>
+  );
+}

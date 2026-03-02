@@ -1,0 +1,77 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 900px;
+  height: 80vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 { margin: 0; font-size: 1.5rem; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
+.close-btn:hover { color: #111827; }
+
+.modal-controls {
+  padding: 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 20px;
+}
+
+.control-group { display: flex; flex-direction: column; gap: 8px; }
+.control-group label { font-size: 0.85rem; font-weight: 500; color: #374151; text-transform: uppercase; }
+.catalog-select, .catalog-input {
+  padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;
+}
+.catalog-input:focus, .catalog-select:focus { outline: none; border-color: #eab308; }
+
+.catalog-table-wrap {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.catalog-table { width: 100%; border-collapse: collapse; }
+.catalog-table th { position: sticky; top: 0; background: #f3f4f6; text-align: left; padding: 12px 15px; font-size: 0.85rem; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+.catalog-table td { padding: 12px 15px; border-bottom: 1px solid #f3f4f6; }
+.catalog-table tr:hover { background: #f9fafb; }
+.catalog-table tr.selected-row { background: #fefce8; }
+
+.code-badge { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: monospace; }
+.type-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+.type-work { background: #dbeafe; color: #1e40af; }
+.type-material { background: #dcfce7; color: #854d0e; }
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  border-radius: 0 0 12px 12px;
+}
+
+.selected-count { font-size: 1rem; color: #374151; }
+.modal-actions { display: flex; gap: 10px; }
