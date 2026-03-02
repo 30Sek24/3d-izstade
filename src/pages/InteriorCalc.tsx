@@ -67,12 +67,22 @@ const PRICES = {
   doors: { name: 'Iekšdurvju bloka montāža', mat: 180.00, work: 85.00 } // /gab
 };
 
+const ROOM_TYPES = {
+  living_room: 'Viesistaba',
+  bedroom: 'Guļamistaba',
+  kitchen: 'Virtuve',
+  bathroom: 'Vannas istaba',
+  toilet: 'Tualete',
+  corridor: 'Koridors',
+};
+
 export default function InteriorCalc() {
   // ------------------------------------------------------------------
   // STATE: Lietotāja ievadītie parametri (Draft)
   // ------------------------------------------------------------------
   const [params, setParams] = useState({
     country: 'lv',
+    roomType: 'living_room',
     // Ģeometrija
     area: 20,
     height: 2.7,
@@ -97,6 +107,10 @@ export default function InteriorCalc() {
 
     // Ekstras
     elecPoints: 4,
+
+    // Media
+    imageUrl: '',
+    videoUrl: '',
   });
 
   // ------------------------------------------------------------------
@@ -196,7 +210,10 @@ export default function InteriorCalc() {
       totalWork,
       grandTotal,
       workMult,
-      matMult
+      matMult,
+      roomType: ROOM_TYPES[params.roomType as keyof typeof ROOM_TYPES],
+      imageUrl: params.imageUrl,
+      videoUrl: params.videoUrl,
     });
   };
 
@@ -216,15 +233,21 @@ export default function InteriorCalc() {
         <div className="calc-form-column">
           
           <section className="calc-section" style={{ background: '#f8fafc', borderLeftColor: '#334155' }}>
-            <h2>Lokācija un Reģions</h2>
+            <h2>Lokācija un Telpas Tips</h2>
             <div className="input-group">
               <label>Valsts, kurā notiek objekts
                 <select name="country" value={params.country} onChange={handleChange} style={{ borderColor: '#334155', fontWeight: 'bold' }}>
                   {renderCountryOptions()}
                 </select>
               </label>
+              <label style={{ marginTop: '15px' }}>Telpas Tips
+                <select name="roomType" value={params.roomType} onChange={handleChange}>
+                  {Object.entries(ROOM_TYPES).map(([key, val]) => (
+                    <option key={key} value={key}>{val}</option>
+                  ))}
+                </select>
+              </label>
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '10px' }}>Visas bāzes cenas tiks mērogotas atbilstoši izvēlētās valsts celtniecības tirgus specifikai un algām.</p>
           </section>
 
           <section className="calc-section">
@@ -330,6 +353,18 @@ export default function InteriorCalc() {
             </div>
           </section>
 
+          <section className="calc-section">
+            <h2>5. Vizuālie Materiāli</h2>
+            <div className="input-group">
+              <label>Attēla URL (lielformāta)
+                <input type="text" name="imageUrl" value={params.imageUrl} onChange={handleChange} placeholder="https://..." />
+              </label>
+              <label style={{ marginTop: '15px' }}>Video URL (YouTube/MP4)
+                <input type="text" name="videoUrl" value={params.videoUrl} onChange={handleChange} placeholder="https://..." />
+              </label>
+            </div>
+          </section>
+
           {/* Lielā pogā "Aprēķināt" apakšā zem visām formām */}
           <button 
             onClick={handleCalculate}
@@ -361,8 +396,33 @@ export default function InteriorCalc() {
             ) : (
               <>
                 <div className="geom-summary" style={{ marginBottom: '20px', marginTop: 0, padding: '12px' }}>
+                  Telpas tips: <strong>{results.roomType}</strong><br/>
                   Sienas: <strong>{results.netWallArea.toFixed(1)} m²</strong> | Perimetrs: <strong>{results.perimeter.toFixed(1)} m</strong>
                 </div>
+
+                {results.imageUrl && (
+                  <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    <img src={results.imageUrl} alt="Telpas vizualizācija" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  </div>
+                )}
+
+                {results.videoUrl && (
+                  <div style={{ marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', background: '#000' }}>
+                    {results.videoUrl.includes('youtube.com') || results.videoUrl.includes('youtu.be') ? (
+                      <iframe 
+                        width="100%" 
+                        height="200" 
+                        src={results.videoUrl.replace('watch?v=', 'embed/')} 
+                        title="YouTube video player" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      ></iframe>
+                    ) : (
+                      <video src={results.videoUrl} controls style={{ width: '100%', height: '200px' }} />
+                    )}
+                  </div>
+                )}
 
                 <table className="results-table">
                   <thead>

@@ -17,6 +17,7 @@ const PRICES = {
 export default function CleaningCalc() {
   const [params, setParams] = useState({
     country: 'lv',
+    address: 'Rīga, Centrs',
     area: 100,
     cleanType: 'post_construction',
     windowArea: 15,
@@ -24,13 +25,14 @@ export default function CleaningCalc() {
   });
 
   const [results, setResults] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setParams(prev => ({
-      ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value
-    }));
+    let finalValue: any = value;
+    if (type === 'number') finalValue = parseFloat(value) || 0;
+    
+    setParams(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handleCalculate = () => {
@@ -58,21 +60,38 @@ export default function CleaningCalc() {
     });
   };
 
+  const handleSubmitOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      await new Promise(res => setTimeout(res, 1500)); 
+      alert(`Paldies! Jūsu pieteikums adresei "${params.address}" ir nosūtīts visām reģistrētajām uzkopšanas brigādēm.`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="calculator-pro-wrapper">
       <div className="calc-header">
         <h1>PRO Uzkopšanas Serviss</h1>
-        <p>Pēcremonta un ģenerāltīrīšanas izmaksu aprēķins.</p>
+        <p>Pēcremonta un ģenerāltīrīšanas izmaksu aprēķins ar automātisku brigāžu izsaukšanu.</p>
       </div>
 
       <div className="calc-grid">
         <div className="calc-form-column">
           <section className="calc-section" style={{ background: '#f8fafc', borderLeftColor: '#10b981' }}>
-            <h2>Lokācija un Reģions</h2>
+            <h2>Lokācija un Objekts</h2>
             <div className="input-group">
-              <select name="country" value={params.country} onChange={handleChange} style={{ fontWeight: 'bold' }}>
-                {renderCountryOptions()}
-              </select>
+              <label>Valsts
+                <select name="country" value={params.country} onChange={handleChange}>
+                  {renderCountryOptions()}
+                </select>
+              </label>
+              <label style={{ marginTop: '15px' }}>Objekta adrese, kur jātīra
+                <input type="text" name="address" value={params.address} onChange={handleChange} placeholder="Pilsēta, iela, numurs" />
+              </label>
             </div>
           </section>
 
@@ -123,9 +142,21 @@ export default function CleaningCalc() {
                     <tr><td>KOPUMMĀ:</td><td className="text-blue">{results.totalMat.toFixed(0)} €</td><td className="text-orange">{results.totalWork.toFixed(0)} €</td></tr>
                   </tfoot>
                 </table>
-                <div className="grand-total-box" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
-                  <span className="gt-label">Kopējās Izmaksas</span>
+                <div className="grand-total-box" style={{ background: '#f0fdf4', borderColor: '#bbf7d0', marginBottom: '20px' }}>
+                  <span className="gt-label">Aptuvienās Izmaksas</span>
                   <span className="gt-value">{results.grandTotal.toFixed(0)} €</span>
+                </div>
+
+                <div style={{ background: '#0f172a', padding: '20px', borderRadius: '12px', color: '#fff', textAlign: 'center' }}>
+                  <h4 style={{ margin: '0 0 10px 0', color: '#10b981' }}>GATAVS SĀKT?</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '20px' }}>Nospiežot pogu, jūsu tāme tiks nosūtīta visām uzkopšanas brigādēm šajā reģionā.</p>
+                  <button 
+                    onClick={handleSubmitOrder}
+                    disabled={isSubmitting}
+                    style={{ width: '100%', padding: '15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    {isSubmitting ? 'Sūta pieteikumu...' : 'IZSAUKT BRIGĀDI'}
+                  </button>
                 </div>
               </>
             )}

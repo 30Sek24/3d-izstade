@@ -4,6 +4,7 @@ import { PointerLockControls, Html, Text, Plane } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 // --- Shared Constants ---
 const SPEED = 18.0;
@@ -30,7 +31,7 @@ function AudioToggle() {
   return (
     <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 100 }}>
       <button onClick={toggle} style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid #3b82f6', color: '#fff', padding: '12px 25px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold', backdropFilter: 'blur(5px)', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-        {isPlaying ? '🔊 Mūzika Ieslēgta' : '⏻ Mūzika Izslēgta'}
+        {isPlaying ? '🔊 MŪZIKA IESLĒGTA' : '⏻ MŪZIKA IZSLĒGTA'}
       </button>
     </div>
   );
@@ -119,8 +120,45 @@ function StaticTextLabel({ text, position, rotation = [0, 0, 0], color, size = 1
   );
 }
 
-// --- 3. TUMŠIE MĀJIŅU PAVILJONI (Detailed Version) ---
-function DarkPavilion({ position, title, subtitle, color, rotation = [0,0,0], link, jobsCount = 0, requestsCount = 0 }: any) {
+// --- Pavilion Screen: Handles Video or Rotating Images ---
+function PavilionScreen({ position, rotation = [0,0,0], isPaid = false, content = [] }: { position: [number, number, number], rotation?: [number, number, number], isPaid?: boolean, content?: string | string[] }) {
+  const [imgIndex, setImgIndex] = useState(0);
+  
+  useEffect(() => {
+    if (isPaid && Array.isArray(content) && content.length > 1) {
+      const interval = setInterval(() => {
+        setImgIndex(prev => (prev + 1) % content.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [isPaid, content]);
+
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh>
+        <planeGeometry args={[10, 4]} />
+        <meshBasicMaterial color="#000" />
+      </mesh>
+      
+      {isPaid ? (
+        <Html position={[0, 0, 0.1]} center transform occlude>
+          <div style={{ width: '400px', height: '160px', background: '#000', overflow: 'hidden' }}>
+            {typeof content === 'string' ? (
+              <video src={content} autoPlay loop muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <img src={content[imgIndex]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Portfolio" />
+            )}
+          </div>
+        </Html>
+      ) : (
+        <StaticTextLabel text="REKLĀMAS VIETA PIEEJAMA" position={[0, 0, 0.1]} color="#222" size={0.4} />
+      )}
+    </group>
+  );
+}
+
+// --- 3. TUMŠIE MĀJIŅU PAVILJONI ---
+function DarkPavilion({ position, title, subtitle, color, rotation = [0,0,0], link, jobsCount = 0, requestsCount = 0, isPaid = false, content = [] }: any) {
   const navigate = useNavigate();
   const { camera } = useThree();
   const [showInfo, setShowInfo] = useState(false);
@@ -146,11 +184,8 @@ function DarkPavilion({ position, title, subtitle, color, rotation = [0,0,0], li
          <DirectionalText text={title} position={[0, 0, 0.25]} color={color} size={0.8} />
       </group>
 
-      {/* Internal Identity */}
-      <group position={[0, 3.5, -5.5]}>
-         <mesh><planeGeometry args={[10, 4]} /><meshBasicMaterial color="#000" /></mesh>
-         <StaticTextLabel text="[ VIDEO PITCH ]" position={[0, 0, 0.1]} color="#444" size={0.6} />
-      </group>
+      <PavilionScreen position={[0, 3.5, -5.5]} isPaid={isPaid} content={content} />
+      
       <StaticTextLabel text={title} position={[0, 1, -5.5]} color={color} size={1} />
       <StaticTextLabel text={subtitle} position={[0, 0.5, -5.5]} color="#aaa" size={0.5} />
 
@@ -180,7 +215,7 @@ function DarkPavilion({ position, title, subtitle, color, rotation = [0,0,0], li
   );
 }
 
-// --- 4. INFO PUNKTS (Detailed) ---
+// --- 4. INFO PUNKTS ---
 function InfoDesk() {
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -197,13 +232,13 @@ function InfoDesk() {
       </group>
       {isOpen && (
         <Html position={[0, 6, -2]} rotation={[0, Math.PI, 0]} center transform occlude>
-          <div style={{ background: 'rgba(15, 23, 42, 0.98)', border: '2px solid #3b82f6', padding: '30px', borderRadius: '15px', color: '#fff', width: '500px', fontFamily: 'sans-serif', pointerEvents: 'auto' }}>
+          <div style={{ background: 'rgba(15, 23, 42, 0.98)', border: `2px solid #3b82f6`, padding: '30px', borderRadius: '15px', color: '#fff', width: '500px', fontFamily: 'sans-serif', pointerEvents: 'auto' }}>
             {!showOrderForm ? (
               <>
                 <h2 style={{ margin: '0 0 15px 0', color: '#3b82f6', fontSize: '2rem', textAlign: 'center' }}>Izstādes Informācija</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px', background: '#020617', padding: '15px', borderRadius: '8px' }}>
                   <div><div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Apmeklētāji</div><div style={{ fontSize: '1.8rem', color: '#10b981', fontWeight: 'bold' }}>1,284</div></div>
-                  <div><div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Stendi</div><div style={{ fontSize: '1.8rem', color: '#eab308', fontWeight: 'bold' }}>15 / 24</div></div>
+                  <div><div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Aizņemti Stendi</div><div style={{ fontSize: '1.8rem', color: '#eab308', fontWeight: 'bold' }}>17 / 24</div></div>
                 </div>
                 <button onClick={() => setShowOrderForm(true)} style={{ background: '#eab308', color: '#000', border: 'none', padding: '12px', width: '100%', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px' }}>Pieteikt darbu visai zālei</button>
                 <button onClick={() => navigate('/login')} style={{ width: '100%', padding: '12px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer' }}>Reģistrēt Biznesu</button>
@@ -212,7 +247,7 @@ function InfoDesk() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h2 style={{ color: '#eab308', fontSize: '1.5rem', textAlign: 'center' }}>Centrālais Pasūtījums</h2>
                 <textarea placeholder="Ko Jums nepieciešams izdarīt?..." rows={4} style={{ padding: '10px', background: '#020617', color: '#fff', border: '1px solid #334155' }}></textarea>
-                <button onClick={() => { alert('Pasūtījums reģistrēts!'); setShowOrderForm(false); setIsOpen(false); }} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>NOSŪTĪT VISIEM MEISTARIEM</button>
+                <button onClick={() => { alert('Pasūtījums reģistrēts!'); setShowOrderForm(false); setIsOpen(false); }} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>NOSŪTĪT VISIEM</button>
                 <button onClick={() => setShowOrderForm(false)} style={{ background: 'transparent', color: '#94a3b8', border: 'none', cursor: 'pointer' }}>Atpakaļ</button>
               </div>
             )}
@@ -224,18 +259,27 @@ function InfoDesk() {
   );
 }
 
-// --- 5. SEMINĀRU ZĀLE (Detailed) ---
+// --- 5. SEMINĀRU ZĀLE ---
 function SidebarSeminarTheatre({ position, rotation = [0,0,0] }: any) {
   const [hasJoined, setHasJoined] = useState(false);
+  const [seminar, setSeminar] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSeminar = async () => {
+      const { data } = await supabase.from('expo_seminar').select('*, expo_booth(title, color)').eq('is_live', true).single();
+      if (data) setSeminar(data);
+    };
+    fetchSeminar();
+  }, []);
+
   return (
     <group position={position} rotation={rotation}>
       <mesh position={[0, 15, -5]} castShadow receiveShadow><boxGeometry args={[50, 30, 2]} /><meshStandardMaterial color="#020617" /></mesh>
       <mesh position={[0, 15, -3.9]}><planeGeometry args={[46, 20]} /><meshBasicMaterial color="#000" /></mesh>
-      <StaticTextLabel text="SEMINĀRU UN APMĀCĪBU ZĀLE" position={[0, 24, -3.8]} color="#3b82f6" size={2.5} />
-      
+      <StaticTextLabel text={seminar ? `TIEŠRAIDE: ${seminar.expo_booth.title}` : "SEMINĀRU UN APMĀCĪBU ZĀLE"} position={[0, 24, -3.8]} color={seminar ? seminar.expo_booth.color : "#3b82f6"} size={2.5} />
       <group position={[15, 5, 3]}>
         <mesh castShadow><boxGeometry args={[8, 5, 0.5]} /><meshStandardMaterial color="#0f172a" /></mesh>
-        <StaticTextLabel text="BRĪVAS VIETAS: 14" position={[0, 0, 0.3]} color={hasJoined ? "#10b981" : "#ef4444"} size={0.5} />
+        <StaticTextLabel text={seminar ? seminar.title : "BRĪVAS VIETAS: 14"} position={[0, 0, 0.3]} color={hasJoined ? "#10b981" : "#ef4444"} size={0.4} />
         {!hasJoined && (
           <group position={[0, -1.5, 0.3]} onClick={(e) => { e.stopPropagation(); setHasJoined(true); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
             <mesh><boxGeometry args={[4, 1, 0.2]} /><meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.5} /></mesh>
@@ -243,11 +287,8 @@ function SidebarSeminarTheatre({ position, rotation = [0,0,0] }: any) {
           </group>
         )}
       </group>
-
       {Array.from({ length: 5 }).map((_, r) => Array.from({ length: 8 }).map((_, c) => (
-        <mesh key={`seat-${r}-${c}`} position={[c * 5 - 17.5, 0.5, r * 5 + 15]} castShadow>
-          <boxGeometry args={[3, 1, 3]} /><meshStandardMaterial color="#1e293b" />
-        </mesh>
+        <mesh key={`seat-${r}-${c}`} position={[c * 5 - 17.5, 0.5, r * 5 + 15]} castShadow><boxGeometry args={[3, 1, 3]} /><meshStandardMaterial color="#1e293b" /></mesh>
       )))}
     </group>
   );
@@ -267,24 +308,38 @@ function WallBillboard({ position, rotation = [0,0,0], color, text }: any) {
 // --- 7. MAIN EXPO COMPONENT ---
 export default function Expo3D() {
   const [isLocked, setIsLocked] = useState(false);
+  const [dynamicBooths, setDynamicBooths] = useState<any[]>([]);
   const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    const fetchBooths = async () => {
+      const { data } = await supabase.from('expo_booth').select('*');
+      if (data) setDynamicBooths(data);
+    };
+    fetchBooths();
+  }, []);
 
   const businessBooths = useMemo(() => {
     const nodes: React.ReactNode[] = [];
     const LX = -35; const RX = 35;
     const rotL = [0, Math.PI / 2, 0]; const rotR = [0, -Math.PI / 2, 0];
 
-    // --- ALEJA (Left Row) ---
-    nodes.push(<DarkPavilion key="acc" position={[LX, 0, 60]} rotation={rotL} title="BIZNESA AKCELERATORS" subtitle="30 Dienu Izaicinājums" color="#a855f7" link="/bizness30" requestsCount={150} />);
+    const mockPortfolio = [
+      'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1503387762-592cd58cd47f?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&w=800&q=80'
+    ];
+
+    // Left Column
+    nodes.push(<DarkPavilion key="acc" position={[LX, 0, 60]} rotation={rotL} title="BIZNESA AKCELERATORS" subtitle="30 Dienu Izaicinājums" color="#a855f7" link="/bizness30" requestsCount={150} isPaid={true} content={mockPortfolio} />);
     nodes.push(<DarkPavilion key="b1" position={[LX, 0, 20]} rotation={rotL} title="APDARE UN REMONTS" subtitle="Namdari, Reģipšnieki" color="#eab308" link="/apdare" jobsCount={2} requestsCount={5} />);
     nodes.push(<DarkPavilion key="b2" position={[LX, 0, -20]} rotation={rotL} title="SILDĪŠANAS SISTĒMAS" subtitle="Siltumsūkņi un Katli" color="#ea580c" link="/apkure" requestsCount={12} />);
     nodes.push(<DarkPavilion key="b3" position={[LX, 0, -60]} rotation={rotL} title="JUMTU BŪVNIECĪBA" subtitle="Segumi un Notekas" color="#f43f5e" link="/jumti" jobsCount={4} />);
     nodes.push(<DarkPavilion key="b4" position={[LX, 0, -100]} rotation={rotL} title="LOGI UN DURVIS" subtitle="PVC, Alumīnijs, Koks" color="#0ea5e9" link="/logi" requestsCount={8} />);
-    nodes.push(<DarkPavilion key="b5" position={[LX, 0, -140]} rotation={rotL} title="PRO TĀMĒŠANA" subtitle="Uzņēmumu Portāls" color="#3b82f6" link="/kalkulators" />);
-    nodes.push(<DarkPavilion key="b6" position={[LX, 0, -180]} rotation={rotL} title="INTERJERA DIZAINS" subtitle="3D Vizualizācijas" color="#a855f7" link="/dizains" />);
-    nodes.push(<DarkPavilion key="b7" position={[LX, 0, -220]} rotation={rotL} title="UZFRIŠINĀŠANA 24H" subtitle="Sīkie darbi" color="#f43f5e" link="/uzfrisinasana" requestsCount={20} />);
+    nodes.push(<DarkPavilion key="b6" position={[LX, 0, -140]} rotation={rotL} title="INTERJERA DIZAINS" subtitle="3D Vizualizācijas" color="#a855f7" link="/dizains" isPaid={true} content={['https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80']} />);
+    nodes.push(<DarkPavilion key="b7" position={[LX, 0, -180]} rotation={rotL} title="UZFRIŠINĀŠANA 24H" subtitle="Sīkie darbi" color="#f43f5e" link="/uzfrisinasana" requestsCount={20} />);
 
-    // --- ALEJA (Right Row / Sadarbības Partneri) ---
+    // Right Column
     nodes.push(<DarkPavilion key="sos" position={[RX, 0, 60]} rotation={rotR} title="24/7 SOS AVĀRIJA" subtitle="Santehniķi, Elektriķi" color="#ef4444" link="/avarija" jobsCount={5} requestsCount={14} />);
     nodes.push(<DarkPavilion key="p1" position={[RX, 0, 20]} rotation={rotR} title="KOKA MĀJU BŪVE" subtitle="Karkasi un CLT" color="#22c55e" link="/kokamajas" jobsCount={3} />);
     nodes.push(<DarkPavilion key="p2" position={[RX, 0, -20]} rotation={rotR} title="PAMATU IZBŪVE" subtitle="Pāļi un Plātnes" color="#94a3b8" link="/pamati" requestsCount={6} />);
@@ -292,16 +347,29 @@ export default function Expo3D() {
     nodes.push(<DarkPavilion key="p4" position={[RX, 0, -100]} rotation={rotR} title="UZKOPŠANAS SERVISS" subtitle="Pēcremonta tīrīšana" color="#14b8a6" link="/uzkopsana" jobsCount={8} />);
     nodes.push(<DarkPavilion key="p5" position={[RX, 0, -140]} rotation={rotR} title="SAGĀDE UN LOĢISTIKA" subtitle="Transports un Krāvēji" color="#f59e0b" link="/sagade" jobsCount={2} />);
     nodes.push(<DarkPavilion key="p6" position={[RX, 0, -180]} rotation={rotR} title="AUTO SERVISS" subtitle="Diagnostika" color="#f97316" link="/autoserviss" />);
-    nodes.push(<DarkPavilion key="p7" position={[RX, 0, -220]} rotation={rotR} title="NEKUSTAMAIS ĪPAŠUMS" subtitle="Aģentu rīki" color="#10b981" link="/majoklis" />);
+    nodes.push(<DarkPavilion key="p7" position={[RX, 0, -220]} rotation={rotR} title="NEKUSTAMAIS ĪPAŠUMS" subtitle="Aģentu rīki" color="#10b981" link="/majoklis" isPaid={true} content={['https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80']} />);
     nodes.push(<DarkPavilion key="p8" position={[RX, 0, -260]} rotation={rotR} title="DOKUMENTU HUBS" subtitle="Līgumi un Rēķini" color="#8b5cf6" link="/dokumenti" />);
 
+    // Dynamic from DB
+    dynamicBooths.forEach((booth) => {
+      const x = booth.side === 'left' ? LX : RX;
+      const rot = booth.side === 'left' ? rotL : rotR;
+      nodes.push(
+        <DarkPavilion 
+          key={booth.id} position={[x, 0, booth.position_z]} rotation={rot} 
+          title={booth.title} subtitle={booth.subtitle} color={booth.color} 
+          jobsCount={booth.jobs_count} requestsCount={booth.requests_count}
+          isPaid={booth.is_paid} content={[]}
+        />
+      );
+    });
+
     return nodes;
-  }, []);
+  }, [dynamicBooths]);
 
   return (
     <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative', background: '#020617' }}>
       <AudioToggle />
-      
       {!isLocked && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.95)', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#fff', backdropFilter: 'blur(15px)' }}>
           <h1 style={{ fontSize: '5rem', color: '#3b82f6', fontWeight: 900, marginBottom: '10px', textShadow: '0 0 20px rgba(59, 130, 246, 0.5)' }}>PLATFORMU CENTRS</h1>
@@ -312,39 +380,26 @@ export default function Expo3D() {
           <p style={{ marginTop: '40px', color: '#475569' }}>WASD - Staigāt | PELE - Skatīties</p>
         </div>
       )}
-
-      {isLocked && <div style={{ position: 'absolute', top: '50%', left: '50%', width: '4px', height: '4px', background: '#fff', borderRadius: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, pointerEvents: 'none', opacity: 0.5 }} />}
-
       <Canvas shadows camera={{ fov: 60, far: 1500 }}>
         <PointerLockControls ref={controlsRef} onLock={() => setIsLocked(true)} onUnlock={() => setIsLocked(false)} />
         <Player />
         <ambientLight intensity={0.4} />
         <directionalLight position={[0, 100, 50]} intensity={0.8} castShadow shadow-mapSize={[4096, 4096]} />
-        
-        {/* Environment */}
         <group>
           <Plane args={[200, 1000]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><meshStandardMaterial color="#e2e8f0" roughness={0.1} /></Plane>
           <gridHelper args={[200, 80, '#cbd5e1', '#f1f5f9']} position={[0, 0.01, 0]} />
         </group>
-
-        {/* Outer Walls & Roof */}
         <mesh position={[0, 25, 150]} receiveShadow><boxGeometry args={[200, 50, 2]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[0, 25, -550]} receiveShadow><boxGeometry args={[200, 50, 2]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[-100, 25, -200]} receiveShadow><boxGeometry args={[2, 50, 700]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[100, 25, -200]} receiveShadow><boxGeometry args={[2, 50, 700]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[0, 50, -200]}><boxGeometry args={[200, 2, 700]} /><meshStandardMaterial color="#0f172a" /></mesh>
-
-        {/* Billboards */}
         <WallBillboard position={[98.9, 20, 0]} rotation={[0, -Math.PI/2, 0]} color="#eab308" text="REKLĀMA: JAUNI PROJEKTI" />
         <WallBillboard position={[-98.9, 20, -100]} rotation={[0, Math.PI/2, 0]} color="#ef4444" text="REKLĀMA: SOS DIENESTS" />
         <WallBillboard position={[0, 20, -548.9]} rotation={[0, 0, 0]} color="#3b82f6" text="MEISTARU APMĀCĪBA" />
-
         <InfoDesk />
         {businessBooths}
-        
-        {/* Seminar Theatre */}
         <SidebarSeminarTheatre position={[-70, 0, -150]} rotation={[0, Math.PI/2, 0]} />
-        
         <EffectComposer><Bloom luminanceThreshold={0.5} intensity={0.8} /></EffectComposer>
       </Canvas>
     </div>

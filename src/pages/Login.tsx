@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('builder'); // Pievienots arods/loma
+  const [role, setRole] = useState('builder'); 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -18,27 +18,47 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        // Reģistrācija ar meta-datiem (arods)
-        const { error } = await supabase.auth.signUp({
+        // 1. Create User
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              role: role 
-            }
-          }
+          options: { data: { role: role } }
         });
-        if (error) throw error;
-        alert(`Reģistrācija veiksmīga! Kā ${role} tev tiks piešķirta atbilstoša 3D būdiņa izstādē. Pārbaudi e-pastu.`);
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // 2. Create Organization
+          const { data: orgData, error: orgError } = await supabase
+            .from('organization')
+            .insert([{ name: `${email.split('@')[0]} Business`, business_type: role }])
+            .select()
+            .single();
+          
+          if (orgError) console.error("Org creation error:", orgError);
+
+          if (orgData) {
+            // 3. Create Booth Entry
+            const side = Math.random() > 0.5 ? 'left' : 'right';
+            const { error: boothError } = await supabase
+              .from('expo_booth')
+              .insert([{ 
+                org_id: orgData.id, 
+                title: `${email.split('@')[0].toUpperCase()} SERVICES`,
+                subtitle: role,
+                position_z: -(Math.floor(Math.random() * 10) * 40 + 200), // Place deep in the hall
+                side: side,
+                color: role === 'builder' ? '#eab308' : '#3b82f6'
+              }]);
+            if (boothError) console.error("Booth creation error:", boothError);
+          }
+        }
+
+        alert(`Reģistrācija veiksmīga! Tev ir piešķirta jauna būdiņa izstādes dziļumā. Pārbaudi e-pastu.`);
         setIsSignUp(false);
       } else {
-        // Ielogošanās
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate('/kalkulators');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       setErrorMsg(error.message || "Radās kļūda autentifikācijā.");
@@ -86,37 +106,22 @@ export default function Login() {
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
           E-pasts
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-            style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem' }} />
         </label>
         
         <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
           Parole
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-            style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem', outline: 'none' }}
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '12px', border: '2px solid #cbd5e1', borderRadius: '8px', fontSize: '1rem' }} />
         </label>
         
-        <button type="submit" disabled={isLoading} style={{ marginTop: '10px', padding: '15px', fontSize: '1.1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>
+        <button type="submit" disabled={isLoading} style={{ marginTop: '10px', padding: '15px', fontSize: '1.1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
           {isLoading ? 'Lūdzu uzgaidiet...' : (isSignUp ? 'Reģistrēties' : 'Ielogoties')}
         </button>
       </form>
 
       <div style={{ marginTop: '25px', textAlign: 'center', fontSize: '0.95rem', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
         {isSignUp ? 'Jau ir izveidots stends? ' : 'Vēl neesi Metaversā? '}
-        <button 
-          onClick={() => setIsSignUp(!isSignUp)} 
-          style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-        >
+        <button onClick={() => setIsSignUp(!isSignUp)} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
           {isSignUp ? 'Ielogoties' : 'Izveidot Stendu'}
         </button>
       </div>

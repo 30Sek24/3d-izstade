@@ -4,19 +4,21 @@ import { COUNTRIES, renderCountryOptions } from '../lib/constants';
 
 const PRICES = {
   transport: {
-    van: { name: 'Kravas mikroautobuss (līdz 1.5t)', rate: 45 }, // EUR par reisu
-    truck: { name: 'Kravas auto ar manipulatoru (Fiskars)', rate: 85 }, // EUR par reisu
-    heavy: { name: 'Lielgabarīta krava (Fūre)', rate: 150 }, // EUR par reisu
+    van: { name: 'Kravas mikroautobuss (līdz 1.5t)', rate: 60 }, // EUR par reisu
+    truck: { name: 'Kravas auto ar manipulatoru (Fiskars)', rate: 120 }, // EUR par reisu
+    heavy: { name: 'Lielgabarīta krava (Fūre)', rate: 250 }, // EUR par reisu
   },
   labor: {
-    unloading: { name: 'Izkraušana ar rokām', rate: 15 }, // EUR par tonnu
-    carrying: { name: 'Uznešana stāvā (bez lifta)', rate: 5 }, // EUR par tonnu par katru stāvu
+    unloading: { name: 'Izkraušana ar rokām', rate: 45 }, // EUR par tonnu
+    carrying: { name: 'Uznešana stāvā (bez lifta)', rate: 30 }, // EUR par tonnu par katru stāvu
   }
 };
 
 export default function LogisticsCalc() {
   const [params, setParams] = useState({
     country: 'lv',
+    fromAddress: 'Rīga, Ganību dambis',
+    toAddress: 'Jūrmala, Dubulti',
     transportType: 'van',
     trips: 1,
     weightTons: 1.5,
@@ -59,8 +61,8 @@ export default function LogisticsCalc() {
   return (
     <div className="calculator-pro-wrapper">
       <div className="calc-header">
-        <h1>PRO Sagādes un Loģistikas Tāme</h1>
-        <p>Būvmateriālu piegāde, izkraušana un uznešana objektā.</p>
+        <h1>PRO Sagāde un Loģistika</h1>
+        <p>Būvmateriālu piegāde, izkraušana un smags manuālais darbs objektā.</p>
       </div>
 
       <div className="calc-grid">
@@ -75,8 +77,16 @@ export default function LogisticsCalc() {
           </section>
 
           <section className="calc-section">
-            <h2>1. Transports</h2>
+            <h2>1. Maršruts un Transports</h2>
             <div className="input-group">
+              <label>No kurienes (Iekraušana)
+                <input type="text" name="fromAddress" value={params.fromAddress} onChange={handleChange} placeholder="Adrese vai veikals" />
+              </label>
+              <label>Uz kurieni (Objekts)
+                <input type="text" name="toAddress" value={params.toAddress} onChange={handleChange} placeholder="Objekta adrese" />
+              </label>
+            </div>
+            <div className="input-group" style={{ marginTop: '15px' }}>
               <label>Transportlīdzekļa tips
                 <select name="transportType" value={params.transportType} onChange={handleChange}>
                   {Object.entries(PRICES.transport).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
@@ -89,11 +99,11 @@ export default function LogisticsCalc() {
           </section>
 
           <section className="calc-section">
-            <h2>2. Izkraušana un Uznešana</h2>
+            <h2>2. Izkraušana un Manuāls darbs</h2>
             <div className="input-group">
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '1rem', color: '#0f172a', marginBottom: '10px' }}>
                 <input type="checkbox" name="needUnloading" checked={params.needUnloading} onChange={handleChange} style={{ width: '24px', height: '24px' }} />
-                Nepieciešams krāvēju darbs
+                Nepieciešama izkraušana un uznešana
               </label>
               
               {params.needUnloading && (
@@ -107,6 +117,7 @@ export default function LogisticsCalc() {
                 </div>
               )}
             </div>
+            <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '10px' }}>* Manuāls darbs tiek rēķināts pēc tonnāžas un stāvu skaita, ievērojot darba drošības standartus.</p>
           </section>
 
           <button onClick={handleCalculate} className="btn-primary" style={{ background: '#f59e0b', marginTop: '20px' }}>Sastādīt Tāmi</button>
@@ -114,19 +125,23 @@ export default function LogisticsCalc() {
 
         <div className="calc-results-column">
           <div className="sticky-results" style={{ borderColor: '#f59e0b' }}>
-            <h3 className="results-title">Loģistikas Izmaksas</h3>
+            <h3 className="results-title">Loģistikas Detalizācija</h3>
             {!results ? (
               <div className="empty-state"><div className="empty-state-icon">🚚</div><p>Aizpildi datus un spied Sastādīt Tāmi</p></div>
             ) : (
               <>
+                <div style={{ background: '#fffbeb', border: '1px dashed #fde68a', padding: '15px', borderRadius: '10px', marginBottom: '20px', fontSize: '0.9rem' }}>
+                  <strong>Maršruts:</strong><br/>
+                  <span style={{color: '#92400e'}}>{params.fromAddress} → {params.toAddress}</span>
+                </div>
                 <table className="results-table">
-                  <thead><tr><th>Pozīcija</th><th>Maksa (Pakalpojums)</th></tr></thead>
+                  <thead><tr><th>Pozīcija</th><th>Maksa</th></tr></thead>
                   <tbody>
-                    <tr><td>Transportēšana ({params.trips} reisi)</td><td>{results.transportCost.toFixed(0)} €</td></tr>
+                    <tr><td>Transports ({params.trips} reisi)</td><td>{results.transportCost.toFixed(0)} €</td></tr>
                     {params.needUnloading && (
                       <>
                         <tr><td>Izkraušana ({params.weightTons}t)</td><td>{results.unloadingCost.toFixed(0)} €</td></tr>
-                        <tr style={{ borderBottom: '2px solid #e2e8f0' }}><td>Uznešana stāvā</td><td>{results.carryingCost.toFixed(0)} €</td></tr>
+                        <tr style={{ borderBottom: '2px solid #e2e8f0' }}><td>Uznešana ({params.floorsUp}. stāvs)</td><td>{results.carryingCost.toFixed(0)} €</td></tr>
                       </>
                     )}
                   </tbody>
@@ -135,7 +150,7 @@ export default function LogisticsCalc() {
                   </tfoot>
                 </table>
                 <div className="grand-total-box" style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
-                  <span className="gt-label">Piegādes Cena</span>
+                  <span className="gt-label">LOĢISTIKAS CENA</span>
                   <span className="gt-value">{results.grandTotal.toFixed(0)} €</span>
                 </div>
               </>
