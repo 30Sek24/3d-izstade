@@ -15,6 +15,7 @@
     "@react-three/postprocessing": "^3.0.4",
     "@supabase/supabase-js": "^2.98.0",
     "@types/three": "^0.183.1",
+    "buffer": "^6.0.3",
     "canvas": "^3.2.1",
     "fs-extra": "^11.3.3",
     "html2canvas": "^1.4.1",
