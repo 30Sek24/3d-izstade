@@ -26,6 +26,7 @@ import MarketingAutopilot from './pages/MarketingAutopilot';
 import Dashboard from './pages/Dashboard';
 import DocumentHub from './pages/DocumentHub';
 import SosEmergency from './pages/SosEmergency';
+import AdminFinance from './pages/AdminFinance';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="terms" element={<Terms />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="finances" element={<AdminFinance />} />
           <Route path="autopilots" element={<MarketingAutopilot />} />
           <Route path="dokumenti" element={<DocumentHub />} />
           <Route path="kalkulators" element={<Calculator />} />

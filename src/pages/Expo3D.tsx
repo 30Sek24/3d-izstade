@@ -5,9 +5,16 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { telemetry } from '../lib/telemetry';
+import { Joystick } from 'react-joystick-component';
 
 // --- Shared Constants ---
 const SPEED = 18.0;
+const joystickState = { x: 0, y: 0 };
+let isTouchDevice = false;
+if (typeof window !== 'undefined') {
+  isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
 
 // --- 0. AUDIO ---
 function AudioToggle() {
@@ -83,11 +90,11 @@ function Player() {
   }, [camera]);
 
   useFrame((_, delta) => {
-    direction.current.z = Number(forward) - Number(backward);
-    direction.current.x = Number(right) - Number(left);
+    direction.current.z = Number(forward) - Number(backward) - joystickState.y;
+    direction.current.x = Number(right) - Number(left) + joystickState.x;
     direction.current.normalize();
-    if (forward || backward) camera.translateZ(-direction.current.z * SPEED * delta);
-    if (left || right) camera.translateX(direction.current.x * SPEED * delta);
+    if (forward || backward || joystickState.y !== 0) camera.translateZ(-direction.current.z * SPEED * delta);
+    if (left || right || joystickState.x !== 0) camera.translateX(direction.current.x * SPEED * delta);
     camera.position.y = 1.7; 
     if (camera.position.x > 95) camera.position.x = 95;
     if (camera.position.x < -95) camera.position.x = -95;
@@ -298,24 +305,61 @@ function SidebarSeminarTheatre({ position, rotation = [0,0,0] }: any) {
 
 // --- 6. WALL BILLBOARDS ---
 function WallBillboard({ position, rotation = [0,0,0], color, text, slotId }: any) {
-  const [ad, setAd] = useState<any>(null);
+  const [ads, setAds] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const fetchAd = async () => {
-      const { data } = await supabase.from('ad_campaign').select('*').eq('slot_id', slotId).eq('is_active', true).limit(1).single();
-      if (data) setAd(data);
+    const fetchAds = async () => {
+      // PR 11: Fetch all active ads for this slot
+      const { data } = await supabase
+        .from('ad_campaign')
+        .select('*')
+        .eq('slot_id', slotId)
+        .eq('is_active', true);
+      
+      if (data && data.length > 0) {
+        setAds(data);
+        telemetry.trackAdImpression(data[0].id);
+      }
     };
-    fetchAd();
+    fetchAds();
   }, [slotId]);
+
+  // Rotate ads every 10 seconds
+  useEffect(() => {
+    if (ads.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const next = (prev + 1) % ads.length;
+        telemetry.trackAdImpression(ads[next].id);
+        return next;
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [ads]);
+
+  const currentAd = ads[currentIndex];
+
+  const handleAdClick = () => {
+    if (currentAd && currentAd.id) {
+      telemetry.trackAdClick(currentAd.id);
+      if (currentAd.link_url) {
+        window.open(currentAd.link_url, '_blank');
+      }
+    }
+  };
 
   return (
     <group position={position} rotation={rotation}>
       <mesh castShadow><boxGeometry args={[60, 30, 1]} /><meshStandardMaterial color="#111" /></mesh>
       <mesh position={[0, 0, 0.6]}><planeGeometry args={[58, 28]} /><meshBasicMaterial color="#000" /></mesh>
-      {ad ? (
+      {currentAd ? (
         <Html position={[0, 0, 0.7]} center transform occlude>
-          <div style={{ width: '580px', height: '280px', background: '#000', overflow: 'hidden' }}>
-            {ad.media_type === 'video' ? <video src={ad.media_url} autoPlay loop muted style={{ width: '100%' }} /> : <img src={ad.media_url} style={{ width: '100%' }} alt="Ad" />}
+          <div 
+            onClick={handleAdClick}
+            style={{ width: '580px', height: '280px', background: '#000', overflow: 'hidden', cursor: currentAd.link_url ? 'pointer' : 'default' }}
+          >
+            {currentAd.media_type === 'video' ? <video src={currentAd.media_url} autoPlay loop muted style={{ width: '100%' }} /> : <img src={currentAd.media_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Ad" />}
           </div>
         </Html>
       ) : (
@@ -352,9 +396,55 @@ function CountdownInside() {
   );
 }
 
+// --- MOBILE TOUCH CAMERA ---
+function MobileCameraControls() {
+  const { camera, gl } = useThree();
+  const euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'));
+  const isDragging = useRef(false);
+  const previousTouch = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!isTouchDevice) return;
+    const domElement = gl.domElement;
+    
+    const onTouchStart = (e: TouchEvent) => {
+      isDragging.current = true;
+      previousTouch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current) return;
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const movementX = touchX - previousTouch.current.x;
+      const movementY = touchY - previousTouch.current.y;
+      
+      euler.current.setFromQuaternion(camera.quaternion);
+      euler.current.y -= movementX * 0.005;
+      euler.current.x -= movementY * 0.005;
+      euler.current.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, euler.current.x));
+      camera.quaternion.setFromEuler(euler.current);
+      
+      previousTouch.current = { x: touchX, y: touchY };
+    };
+    const onTouchEnd = () => { isDragging.current = false; };
+    
+    domElement.addEventListener('touchstart', onTouchStart, { passive: true });
+    domElement.addEventListener('touchmove', onTouchMove, { passive: true });
+    domElement.addEventListener('touchend', onTouchEnd);
+    
+    return () => {
+      domElement.removeEventListener('touchstart', onTouchStart);
+      domElement.removeEventListener('touchmove', onTouchMove);
+      domElement.removeEventListener('touchend', onTouchEnd);
+    }
+  }, [camera, gl.domElement]);
+  return null;
+}
+
 // --- 7. MAIN EXPO COMPONENT ---
 export default function Expo3D() {
   const [isLocked, setIsLocked] = useState(false);
+  const [mobileMode, setMobileMode] = useState(false);
   const [dynamicBooths, setDynamicBooths] = useState<any[]>([]);
   const controlsRef = useRef<any>(null);
 
@@ -422,20 +512,50 @@ export default function Expo3D() {
   }, [dynamicBooths]);
 
   return (
-    <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative', background: '#020617' }}>
+    <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative', background: '#020617', touchAction: 'none' }}>
       <AudioToggle />
-      {!isLocked && (
+      {!isLocked && !mobileMode && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.95)', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#fff', backdropFilter: 'blur(15px)' }}>
-          <h1 style={{ fontSize: '5rem', color: '#3b82f6', fontWeight: 900, marginBottom: '10px', textShadow: '0 0 20px rgba(59, 130, 246, 0.5)' }}>PLATFORMU CENTRS</h1>
-          <p style={{ color: '#94a3b8', fontSize: '1.2rem', marginBottom: '40px', letterSpacing: '2px' }}>EKSPERTU UN TEHNOLOĢIJU METAVERSA IZSTĀDE</p>
-          <button onClick={() => controlsRef.current?.lock()} style={{ padding: '25px 100px', fontSize: '1.4rem', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '12px', boxShadow: '0 15px 40px rgba(59, 130, 246, 0.4)' }}>
+          <h1 style={{ fontSize: '5rem', color: '#3b82f6', fontWeight: 900, marginBottom: '10px', textShadow: '0 0 20px rgba(59, 130, 246, 0.5)', textAlign: 'center' }}>PLATFORMU CENTRS</h1>
+          <p style={{ color: '#94a3b8', fontSize: '1.2rem', marginBottom: '40px', letterSpacing: '2px', textAlign: 'center' }}>EKSPERTU UN TEHNOLOĢIJU METAVERSA IZSTĀDE</p>
+          <button onClick={() => {
+            if (isTouchDevice) {
+              setMobileMode(true);
+            } else {
+              controlsRef.current?.lock();
+            }
+          }} style={{ padding: '25px 100px', fontSize: '1.4rem', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '12px', boxShadow: '0 15px 40px rgba(59, 130, 246, 0.4)' }}>
             Ienākt Izstādē
           </button>
-          <p style={{ marginTop: '40px', color: '#475569' }}>WASD - Staigāt | PELE - Skatīties</p>
+          <p style={{ marginTop: '40px', color: '#475569' }}>
+            {isTouchDevice ? "VILKT - Skatīties | KLOĶIS - Staigāt" : "WASD - Staigāt | PELE - Skatīties"}
+          </p>
         </div>
       )}
+
+      {/* MOBILE JOYSTICK OVERLAY */}
+      {mobileMode && (
+        <div style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 50 }}>
+          <Joystick 
+            size={100} 
+            sticky={true} 
+            baseColor="rgba(255,255,255,0.2)" 
+            stickColor="rgba(59, 130, 246, 0.8)" 
+            move={(e: any) => {
+              joystickState.x = e.x || 0;
+              joystickState.y = e.y || 0;
+            }} 
+            stop={() => {
+              joystickState.x = 0;
+              joystickState.y = 0;
+            }}
+          />
+        </div>
+      )}
+
       <Canvas shadows camera={{ fov: 60, far: 1500 }}>
-        <PointerLockControls ref={controlsRef} onLock={() => setIsLocked(true)} onUnlock={() => setIsLocked(false)} />
+        {!isTouchDevice && <PointerLockControls ref={controlsRef} onLock={() => setIsLocked(true)} onUnlock={() => setIsLocked(false)} />}
+        {isTouchDevice && <MobileCameraControls />}
         <Player />
         <ambientLight intensity={0.4} />
         <directionalLight position={[0, 100, 50]} intensity={0.8} castShadow shadow-mapSize={[4096, 4096]} />

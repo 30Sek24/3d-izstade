@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [booth, setBooth] = useState<any>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Editor State
@@ -19,6 +20,9 @@ export default function Dashboard() {
   // Seminar State
   const [showSeminarForm, setShowSeminarForm] = useState(false);
   const [seminarTitle, setSeminarTitle] = useState('');
+
+  // Ad Campaign State
+  const [newCampaign, setNewCampaign] = useState({ slot_id: 'hall_wall_right', media_url: '', link_url: '' });
 
   const navigate = useNavigate();
 
@@ -35,8 +39,6 @@ export default function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      // 1. Get booth for the user's organization
-      // First, get the org_id (simplified for this demo, usually user has org_id)
       const { data: boothData } = await supabase
         .from('expo_booth')
         .select('*, organization(*)')
@@ -47,13 +49,14 @@ export default function Dashboard() {
         setBooth(boothData);
         setEditData(boothData);
         
-        // 2. Get offers
         const { data: offersData } = await supabase.from('booth_offer').select('*').eq('booth_id', boothData.id);
         setOffers(offersData || []);
 
-        // 3. Get leads
         const { data: leadsData } = await supabase.from('booth_lead').select('*').eq('booth_id', boothData.id).order('created_at', { ascending: false });
         setLeads(leadsData || []);
+
+        const { data: adsData } = await supabase.from('ad_campaign').select('*').eq('org_id', boothData.org_id);
+        setCampaigns(adsData || []);
       }
     } catch (e) {
       console.error(e);
@@ -92,8 +95,6 @@ export default function Dashboard() {
 
   const handleStartSeminar = async () => {
     if (!seminarTitle) return alert("Ievadiet semināra tēmu!");
-    
-    // Create a live seminar in the DB
     const { error } = await supabase.from('expo_seminar').insert([{
       booth_id: booth.id,
       title: seminarTitle,
@@ -102,16 +103,53 @@ export default function Dashboard() {
     }]);
 
     if (!error) {
-      alert(`Seminārs "${seminarTitle}" ir izsludināts! Jūsu stends tagad tiek reklamēts Semināru zālē.`);
+      alert(`Seminārs "${seminarTitle}" ir izsludināts!`);
       setShowSeminarForm(false);
       setSeminarTitle('');
+    }
+  };
+
+  const handleBuyAd = async () => {
+    if (!newCampaign.media_url) return alert("Norādiet banera vai video URL!");
+    
+    // Create inactive campaign in DB
+    const { data: campaign, error } = await supabase.from('ad_campaign').insert([{
+      org_id: booth.org_id,
+      slot_id: newCampaign.slot_id,
+      media_url: newCampaign.media_url,
+      media_type: newCampaign.media_url.endsWith('.mp4') ? 'video' : 'image',
+      link_url: newCampaign.link_url,
+      start_date: new Date().toISOString(),
+      end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 nedēļa
+      is_active: false // Tiks aktivizēts caur webhook
+    }]).select().single();
+
+    if (error || !campaign) {
+      return alert("Kļūda saglabājot kampaņu");
+    }
+
+    // Izsaucam Edge Function priekš Stripe
+    const price = newCampaign.slot_id.includes('wall') ? 500 : 200; // Demorežīma cenas
+    const res = await fetch('https://gbmxrposlrhctyaaznmj.supabase.co/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        campaignId: campaign.id,
+        slotId: newCampaign.slot_id,
+        price: price,
+        returnUrl: window.location.origin + '/dashboard'
+      })
+    });
+    
+    if (res.ok) {
+      const { url } = await res.json();
+      window.location.href = url; // Redirect to Stripe
     } else {
-      alert("Kļūda izsludinot semināru.");
+      alert("Kļūda veidojot maksājumu.");
     }
   };
 
   if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}>Ielādē vadības paneli...</div>;
-
   if (!session) return <div style={{ padding: '100px', textAlign: 'center' }}>Lūdzu, ielogojieties.</div>;
 
   return (
@@ -208,9 +246,9 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* RIGHT COLUMN: LEADS & STATS */}
+        {/* RIGHT COLUMN: LEADS & STATS & ADS */}
         <div>
-          <section className="calc-section" style={{ background: '#0f172a', color: '#fff' }}>
+          <section className="calc-section" style={{ background: '#0f172a', color: '#fff', marginBottom: '30px' }}>
             <h2 style={{ color: '#fff' }}>Jaunākie Klienti (Leads)</h2>
             {leads.length === 0 ? (
               <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>Vēl nav saņemts neviens pieteikums.</p>
@@ -230,7 +268,34 @@ export default function Dashboard() {
             )}
           </section>
 
-          <section className="calc-section" style={{ marginTop: '30px' }}>
+          <section className="calc-section" style={{ marginBottom: '30px' }}>
+            <h2>Reklāmas Kampaņas</h2>
+            {campaigns.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                {campaigns.map(c => (
+                  <div key={c.id} style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Slots: {c.slot_id}</span>
+                      <span style={{ color: c.is_active ? '#10b981' : '#f59e0b' }}>{c.is_active ? 'Aktīvs' : 'Gaida apmaksu'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
+              <h4 style={{ margin: '0 0 10px 0' }}>Pirkt Reklāmu:</h4>
+              <select value={newCampaign.slot_id} onChange={e => setNewCampaign({...newCampaign, slot_id: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '6px' }}>
+                <option value="hall_wall_right">Labā Sienas Ekranizācija (€500/ned)</option>
+                <option value="hall_wall_left">Kreisā Sienas Ekranizācija (€500/ned)</option>
+                <option value="hall_end">Galvenais Plakāts (€800/ned)</option>
+              </select>
+              <input type="text" placeholder="Banera/Video URL" value={newCampaign.media_url} onChange={e => setNewCampaign({...newCampaign, media_url: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              <input type="text" placeholder="Galamērķa URL (Click Link)" value={newCampaign.link_url} onChange={e => setNewCampaign({...newCampaign, link_url: e.target.value})} style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              <button onClick={handleBuyAd} className="btn-primary" style={{ width: '100%', background: '#6366f1' }}>Apmaksāt (Stripe)</button>
+            </div>
+          </section>
+
+          <section className="calc-section">
             <h2>Statistika</h2>
             <div style={{ textAlign: 'center', padding: '20px' }}>
               <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Stenda Apmeklējumi</div>

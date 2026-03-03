@@ -22,21 +22,44 @@ export default function Login() {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { role: role } }
+          options: { 
+            data: { role: role }
+          }
         });
         if (authError) throw authError;
 
-        if (authData.user) {
-          // 2. Create Organization
+        // If email confirmation is off, the user is signed in immediately.
+        // Let's explicitly log them in to make sure we have a session for RLS.
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (signInError) {
+            // This happens if email confirmation IS required but not done yet.
+            alert("Lūdzu, apstipriniet savu e-pastu, lai pabeigtu reģistrāciju!");
+            setIsSignUp(false);
+            setIsLoading(false);
+            return;
+        }
+
+        if (signInData.user) {
+          console.log("User signed in:", signInData.user.id);
+          // 2. Create Organization (now we have a session, RLS won't block)
           const { data: orgData, error: orgError } = await supabase
             .from('organization')
-            .insert([{ name: `${email.split('@')[0]} Business`, business_type: role }])
+            .insert([{ 
+                name: `${email.split('@')[0]} Business`, 
+                business_type: role,
+                owner_id: signInData.user.id
+            }])
             .select()
             .single();
           
-          if (orgError) console.error("Org creation error:", orgError);
+          if (orgError) {
+            console.error("Org creation error:", orgError);
+            throw new Error(`Database error (Org): ${orgError.message}`);
+          }
 
           if (orgData) {
+            console.log("Org created:", orgData.id);
             // 3. Create Booth Entry with Slug
             const side = Math.random() > 0.5 ? 'left' : 'right';
             const slug = email.split('@')[0].toLowerCase() + '-' + Math.random().toString(36).substring(2, 7);
@@ -51,19 +74,35 @@ export default function Login() {
                 side: side,
                 color: role === 'builder' ? '#eab308' : '#3b82f6'
               }]);
-            if (boothError) console.error("Booth creation error:", boothError);
+            
+            if (boothError) {
+              console.error("Booth creation error:", boothError);
+              throw new Error(`Database error (Booth): ${boothError.message}`);
+            }
+            console.log("Booth created successfully");
           }
+          
+          alert(`Reģistrācija veiksmīga! Tev ir piešķirta jauna būdiņa izstādes dziļumā.`);
+          navigate('/dashboard');
         }
-
-        alert(`Reģistrācija veiksmīga! Tev ir piešķirta jauna būdiņa izstādes dziļumā. Pārbaudi e-pastu.`);
-        setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate('/dashboard');
       }
     } catch (error: any) {
-      setErrorMsg(error.message || "Radās kļūda autentifikācijā.");
+      console.error("Auth process error:", error);
+      
+      let friendlyError = error.message || "Radās kļūda autentifikācijā.";
+      if (error.message.includes('Email not confirmed')) {
+        friendlyError = "Lūdzu apstiprini savu e-pastu, noklikšķinot uz saites, kuru mēs tev nosūtījām (Pārbaudi arī Spam/Mēstuļu mapi).";
+      } else if (error.message.includes('Invalid login credentials')) {
+        friendlyError = "Nepareizs e-pasts vai parole.";
+      } else if (error.message.includes('User already registered')) {
+        friendlyError = "Lietotājs ar šādu e-pastu jau eksistē. Lūdzu ielogojies.";
+      }
+      
+      setErrorMsg(friendlyError);
     } finally {
       setIsLoading(false);
     }
