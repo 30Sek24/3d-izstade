@@ -19,6 +19,10 @@ import LogisticsCalc from './pages/LogisticsCalc';
 import WindowsCalc from './pages/WindowsCalc';
 import QuickFixCalc from './pages/QuickFixCalc';
 import BusinessGame from './pages/BusinessGame';
+import Pricing from './pages/Pricing';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import MarketingAutopilot from './pages/MarketingAutopilot';
 import Dashboard from './pages/Dashboard';
 import DocumentHub from './pages/DocumentHub';
 import SosEmergency from './pages/SosEmergency';
@@ -30,7 +34,11 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="terms" element={<Terms />} />
+          <Route path="privacy" element={<Privacy />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="autopilots" element={<MarketingAutopilot />} />
           <Route path="dokumenti" element={<DocumentHub />} />
           <Route path="kalkulators" element={<Calculator />} />
           <Route path="apdare" element={<InteriorCalc />} />

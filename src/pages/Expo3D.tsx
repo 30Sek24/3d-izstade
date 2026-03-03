@@ -143,10 +143,12 @@ function PavilionScreen({ position, rotation = [0,0,0], isPaid = false, content 
       {isPaid ? (
         <Html position={[0, 0, 0.1]} center transform occlude>
           <div style={{ width: '400px', height: '160px', background: '#000', overflow: 'hidden' }}>
-            {typeof content === 'string' ? (
+            {typeof content === 'string' && content.startsWith('http') ? (
               <video src={content} autoPlay loop muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
+            ) : Array.isArray(content) && content.length > 0 ? (
               <img src={content[imgIndex]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Portfolio" />
+            ) : (
+              <div style={{ color: '#fff', textAlign: 'center', paddingTop: '60px' }}>PIEVIENO PORTFOLIO</div>
             )}
           </div>
         </Html>
@@ -295,12 +297,57 @@ function SidebarSeminarTheatre({ position, rotation = [0,0,0] }: any) {
 }
 
 // --- 6. WALL BILLBOARDS ---
-function WallBillboard({ position, rotation = [0,0,0], color, text }: any) {
+function WallBillboard({ position, rotation = [0,0,0], color, text, slotId }: any) {
+  const [ad, setAd] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchAd = async () => {
+      const { data } = await supabase.from('ad_campaign').select('*').eq('slot_id', slotId).eq('is_active', true).limit(1).single();
+      if (data) setAd(data);
+    };
+    fetchAd();
+  }, [slotId]);
+
   return (
     <group position={position} rotation={rotation}>
       <mesh castShadow><boxGeometry args={[60, 30, 1]} /><meshStandardMaterial color="#111" /></mesh>
       <mesh position={[0, 0, 0.6]}><planeGeometry args={[58, 28]} /><meshBasicMaterial color="#000" /></mesh>
-      <DirectionalText text={text} position={[0, 0, 0.7]} color={color} size={3} />
+      {ad ? (
+        <Html position={[0, 0, 0.7]} center transform occlude>
+          <div style={{ width: '580px', height: '280px', background: '#000', overflow: 'hidden' }}>
+            {ad.media_type === 'video' ? <video src={ad.media_url} autoPlay loop muted style={{ width: '100%' }} /> : <img src={ad.media_url} style={{ width: '100%' }} alt="Ad" />}
+          </div>
+        </Html>
+      ) : (
+        <DirectionalText text={text} position={[0, 0, 0.7]} color={color} size={3} />
+      )}
+    </group>
+  );
+}
+
+// --- 6.5 COUNTDOWN COMPONENT ---
+function CountdownInside() {
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const target = new Date('2026-03-06T09:00:00').getTime();
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const dist = target - now;
+      if (dist < 0) return clearInterval(interval);
+      setTimeLeft({
+        d: Math.floor(dist / (1000 * 60 * 60 * 24)),
+        h: Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        m: Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60)),
+        s: Math.floor((dist % (1000 * 60)) / 1000),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <group position={[0, -1, 0.6]}>
+      <StaticTextLabel text={`${timeLeft.d}d ${timeLeft.h}h ${timeLeft.m}m ${timeLeft.s}s`} color="#eab308" size={2.5} />
     </group>
   );
 }
@@ -350,16 +397,23 @@ export default function Expo3D() {
     nodes.push(<DarkPavilion key="p7" position={[RX, 0, -220]} rotation={rotR} title="NEKUSTAMAIS ĪPAŠUMS" subtitle="Aģentu rīki" color="#10b981" link="/majoklis" isPaid={true} content={['https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80']} />);
     nodes.push(<DarkPavilion key="p8" position={[RX, 0, -260]} rotation={rotR} title="DOKUMENTU HUBS" subtitle="Līgumi un Rēķini" color="#8b5cf6" link="/dokumenti" />);
 
-    // Dynamic from DB
+    // --- DYNAMIC BOOTHS FROM DB ---
     dynamicBooths.forEach((booth) => {
       const x = booth.side === 'left' ? LX : RX;
       const rot = booth.side === 'left' ? rotL : rotR;
       nodes.push(
         <DarkPavilion 
-          key={booth.id} position={[x, 0, booth.position_z]} rotation={rot} 
-          title={booth.title} subtitle={booth.subtitle} color={booth.color} 
-          jobsCount={booth.jobs_count} requestsCount={booth.requests_count}
-          isPaid={booth.is_paid} content={[]}
+          key={booth.id} 
+          position={[x, 0, booth.position_z]} 
+          rotation={rot} 
+          title={booth.title} 
+          subtitle={booth.subtitle} 
+          color={booth.color} 
+          jobsCount={booth.jobs_count} 
+          requestsCount={booth.requests_count}
+          isPaid={booth.is_paid} 
+          content={[]}
+          link={`/expo/stends/${booth.slug || booth.id}`}
         />
       );
     });
@@ -394,9 +448,14 @@ export default function Expo3D() {
         <mesh position={[-100, 25, -200]} receiveShadow><boxGeometry args={[2, 50, 700]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[100, 25, -200]} receiveShadow><boxGeometry args={[2, 50, 700]} /><meshStandardMaterial color="#1e293b" /></mesh>
         <mesh position={[0, 50, -200]}><boxGeometry args={[200, 2, 700]} /><meshStandardMaterial color="#0f172a" /></mesh>
-        <WallBillboard position={[98.9, 20, 0]} rotation={[0, -Math.PI/2, 0]} color="#eab308" text="REKLĀMA: JAUNI PROJEKTI" />
-        <WallBillboard position={[-98.9, 20, -100]} rotation={[0, Math.PI/2, 0]} color="#ef4444" text="REKLĀMA: SOS DIENESTS" />
-        <WallBillboard position={[0, 20, -548.9]} rotation={[0, 0, 0]} color="#3b82f6" text="MEISTARU APMĀCĪBA" />
+        <WallBillboard position={[98.9, 20, 0]} rotation={[0, -Math.PI/2, 0]} color="#eab308" text="REKLĀMA: JAUNI PROJEKTI" slotId="hall_wall_right" />
+        <WallBillboard position={[-98.9, 20, -100]} rotation={[0, Math.PI/2, 0]} color="#ef4444" text="REKLĀMA: SOS DIENESTS" slotId="hall_wall_left" />
+        <WallBillboard position={[0, 20, -548.9]} rotation={[0, 0, 0]} color="#3b82f6" text="MĒRĶIS: 06.03.2026." slotId="hall_end" />
+        <group position={[0, 35, -540]}>
+           <mesh><boxGeometry args={[40, 10, 1]} /><meshStandardMaterial color="#000" /></mesh>
+           <StaticTextLabel text="LIELĀ ATKLĀŠANA PĒC:" position={[0, 3, 0.6]} color="#fff" size={1.5} />
+           <CountdownInside />
+        </group>
         <InfoDesk />
         {businessBooths}
         <SidebarSeminarTheatre position={[-70, 0, -150]} rotation={[0, Math.PI/2, 0]} />

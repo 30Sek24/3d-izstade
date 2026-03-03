@@ -37,14 +37,16 @@ export default function Login() {
           if (orgError) console.error("Org creation error:", orgError);
 
           if (orgData) {
-            // 3. Create Booth Entry
+            // 3. Create Booth Entry with Slug
             const side = Math.random() > 0.5 ? 'left' : 'right';
+            const slug = email.split('@')[0].toLowerCase() + '-' + Math.random().toString(36).substring(2, 7);
             const { error: boothError } = await supabase
               .from('expo_booth')
               .insert([{ 
                 org_id: orgData.id, 
                 title: `${email.split('@')[0].toUpperCase()} SERVICES`,
                 subtitle: role,
+                slug: slug,
                 position_z: -(Math.floor(Math.random() * 10) * 40 + 200), // Place deep in the hall
                 side: side,
                 color: role === 'builder' ? '#eab308' : '#3b82f6'

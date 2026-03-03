@@ -1,111 +1,127 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Home() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-03-06T09:00:00').getTime();
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      if (distance < 0) {
+        clearInterval(interval);
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        mins: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        secs: Math.floor((distance % (1000 * 60)) / 1000),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ fontFamily: 'Inter, sans-serif', color: '#1e293b' }}>
       
+      {/* PRE-LAUNCH ANNOUNCEMENT */}
+      <div style={{ background: '#3b82f6', color: '#fff', padding: '12px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold', letterSpacing: '1px' }}>
+        🚀 LIELĀ ATKLĀŠANA: 06.03.2026. | AIZŅEM SAVU 3D STENDU TAGAD!
+      </div>
+
       {/* HERO SECTION */}
       <section style={{ 
-        background: '#0a0a0a', 
+        background: '#020617', 
         color: 'white', 
-        padding: '100px 20px', 
+        padding: '120px 20px', 
         textAlign: 'center',
-        borderBottom: '1px solid #333',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Fona dekorācija */}
-        <div style={{
-          position: 'absolute', top: '-50%', left: '50%', transform: 'translateX(-50%)',
-          width: '800px', height: '800px', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%)',
-          pointerEvents: 'none'
-        }}></div>
-
         <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: '4.5rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '20px' }}>
-            Nākotnes Būvniecības <br/>
-            <span style={{ color: '#3b82f6' }}>Platformu Centrs</span>
-          </h1>
-          <p style={{ fontSize: '1.4rem', color: '#9ca3af', marginBottom: '40px', maxWidth: '800px', margin: '0 auto 40px' }}>
-            Vienīgā ekosistēma, kas apvieno snaipera precizitātes tāmju ģeneratorus un globālu 3D Metaverse Expo izstādi visiem nozares dalībniekiem.
-          </p>
+          <div style={{ display: 'inline-block', padding: '10px 25px', borderRadius: '50px', background: 'rgba(59,130,246,0.1)', border: '1px solid #3b82f6', color: '#3b82f6', marginBottom: '30px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+            Pasaules pirmā 3D būvniecības ekosistēma
+          </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            {/* PATH 1: CLIENT */}
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
-              <h3 style={{ color: '#10b981', fontSize: '1.5rem', marginBottom: '10px' }}>Esmu Klients</h3>
-              <p style={{ color: '#9ca3af', fontSize: '0.95rem', marginBottom: '20px' }}>Meklēju meistarus, rēķinu remonta izmaksas vai SOS palīdzību.</p>
-              <Link to="/expo" style={{ display: 'inline-block', padding: '12px 24px', background: '#10b981', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '6px' }}>Ieeja Izstādē</Link>
-            </div>
-            
-            {/* PATH 2: PRO */}
-            <div style={{ background: 'rgba(59,130,246,0.1)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(59,130,246,0.3)', textAlign: 'left' }}>
-              <h3 style={{ color: '#3b82f6', fontSize: '1.5rem', marginBottom: '10px' }}>Esmu Meistars / Firma</h3>
-              <p style={{ color: '#9ca3af', fontSize: '0.95rem', marginBottom: '20px' }}>Vēlos savu 3D stendu, rīkot seminārus un ģenerēt PRO tāmes.</p>
-              <Link to="/login" style={{ display: 'inline-block', padding: '12px 24px', background: '#3b82f6', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '6px' }}>Reģistrēt Biznesu</Link>
-            </div>
-          </div>
-        </div>
-      </section>
+          <h1 style={{ fontSize: '5rem', fontWeight: 900, letterSpacing: '-3px', lineHeight: 1, marginBottom: '20px' }}>
+            Platformu Centrs <br/>
+            <span style={{ color: '#3b82f6' }}>Metaverse 2026</span>
+          </h1>
+          
+          <p style={{ fontSize: '1.4rem', color: '#94a3b8', marginBottom: '50px', maxWidth: '800px', margin: '0 auto 50px' }}>
+            Atklāšana 6. martā. Pieejama pēdējā iespēja reģistrēt savu uzņēmumu un ieņemt vietu hallē pirms globālā starta.
+          </p>
 
-      {/* ROLES SECTION */}
-      <section style={{ padding: '80px 20px', background: '#f8fafc' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '2.5rem', color: '#0f172a', marginBottom: '15px' }}>Vieta ikvienam nozares interesentam</h2>
-            <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Mūsu 3D Expo halle automātiski papildinās ar katru jaunu dalībnieku.</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+          {/* COUNTDOWN TIMER */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '60px' }}>
             {[
-              { title: 'Meistari un Brigādes', desc: 'Iegūstiet savu stendu un rādiet portfolio tūkstošiem klientu.', icon: '🛠️' },
-              { title: 'Būvniecības Uzņēmumi', desc: 'Pārvaldiet tāmes, līgumus un piesaistiet jaunus projektus hallē.', icon: '🏗️' },
-              { title: 'Materiālu Tirgotāji', desc: 'Izvietojiet savu produkciju 3D stendā un pārdodiet pa tiešo.', icon: '📦' },
-              { title: 'Dizaineri un Arhitekti', desc: 'Rīkojiet izglītojošus seminārus un audzējiet savu auditoriju.', icon: '🎨' },
-              { title: 'Nekustamo īpašumu aģenti', desc: 'Novērtējiet objektus un atrodiet sadarbības partnerus remontiem.', icon: '🏠' },
-              { title: 'Parastie Interesenti', desc: 'Izmantojiet PRO rīkus, lai saprastu sava mājokļa patiesās izmaksas.', icon: '👀' },
-            ].map((role, i) => (
-              <div key={i} style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}>{role.icon}</div>
-                <h4 style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#0f172a' }}>{role.title}</h4>
-                <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5 }}>{role.desc}</p>
+              { val: timeLeft.days, label: 'DIENAS' },
+              { val: timeLeft.hours, label: 'STUNDAS' },
+              { val: timeLeft.mins, label: 'MINŪTES' },
+              { val: timeLeft.secs, label: 'SEKUNDES' }
+            ].map((t, i) => (
+              <div key={i} style={{ width: '100px' }}>
+                <div style={{ fontSize: '3rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>{t.val}</div>
+                <div style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 'bold', marginTop: '5px' }}>{t.label}</div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* SEMINAR PREVIEW */}
-      <section style={{ padding: '80px 20px', background: '#0f172a', color: '#fff' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '50px' }}>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '20px' }}>Audzē savu autoritāti</h2>
-            <p style={{ fontSize: '1.2rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '30px' }}>
-              Katrs būdiņas nomnieks var rīkot savus seminārus mūsu centrālajā zālē. 
-              Dalies ar pieredzi, rādi paraugdemonstrējumus un piesaisti jaunus klientus caur izglītojošu saturu.
-            </p>
-            <Link to="/bizness30" style={{ color: '#3b82f6', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.1rem' }}>Uzzināt vairāk par biznesa augšanu →</Link>
-          </div>
-          <div style={{ width: '400px', height: '250px', background: '#1e293b', borderRadius: '20px', border: '4px solid #3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-             <div style={{ position: 'absolute', top: '15px', left: '15px', background: '#ef4444', padding: '4px 10px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>TIEŠRAIDE</div>
-             <div style={{ textAlign: 'center' }}>
-               <div style={{ fontSize: '3rem' }}>🎤</div>
-               <div style={{ fontWeight: 'bold', marginTop: '10px' }}>Semināru zāle</div>
-             </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
+              <h3 style={{ color: '#10b981', fontSize: '1.8rem', marginBottom: '10px', fontWeight: 800 }}>Esmu Klients</h3>
+              <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '25px' }}>Pieejiet pie tāmēm, rēķiniet izmaksas un rezervējiet meistarus pirms atklāšanas.</p>
+              <Link to="/expo" style={{ display: 'inline-block', padding: '15px 35px', background: '#10b981', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '10px', fontSize: '1.1rem' }}>Ieeja Izstādē</Link>
+            </div>
+            
+            <div style={{ background: 'rgba(59,130,246,0.05)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(59,130,246,0.3)', textAlign: 'left' }}>
+              <h3 style={{ color: '#3b82f6', fontSize: '1.8rem', marginBottom: '10px', fontWeight: 800 }}>Esmu Firma</h3>
+              <p style={{ color: '#94a3b8', fontSize: '1rem', marginBottom: '25px' }}>Aizņemiet savu būdiņu un aktivizējiet reklāmas kampaņas pirms 6. marta.</p>
+              <Link to="/login" style={{ display: 'inline-block', padding: '15px 35px', background: '#3b82f6', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '10px', fontSize: '1.1rem' }}>REĢISTRĒT STENDU</Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* AUTOPILOT MARKETING TEXTS (Internal Library for scripts) */}
+      <section style={{ padding: '100px 20px', background: '#f8fafc' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, textAlign: 'center', marginBottom: '60px' }}>Globālā Mārketinga Autopilots</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+            {/* AUTOPILOT 1: B2B (Firms) */}
+            <div style={{ background: '#fff', padding: '40px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div style={{ color: '#8b5cf6', fontWeight: 800, marginBottom: '10px', textTransform: 'uppercase' }}>Bots A: Uzņēmumu Piesaiste</div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Automātiskā Kampaņa "Stendu Rezervācija"</h3>
+              <div style={{ background: '#f1f5f9', padding: '20px', borderRadius: '12px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#334155' }}>
+                [ENG] 🚨 Attention Builders & Contractors! The world's first 3D Metaverse Construction Expo is opening on 06.03.2026. Don't be left out! Claim your virtual booth today and reach global clients before the grand opening. Your services in 3D start now.
+                <br/><br/>
+                [LV] 🚨 Būvniecības uzņēmumi un Meistari! Pasaulē pirmā 3D Expo halle veras vaļā 06.03.2026. Aizņemiet savu vietu hallē, rādiet savu portfolio 3D vidē un audzējiet klientu loku jau tūlīt. Reģistrējies: [Link]
+              </div>
+              <button style={{ marginTop: '20px', padding: '10px 20px', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>AKTIVIZĒT B2B BOTU</button>
+            </div>
+
+            {/* AUTOPILOT 2: B2C (Clients) */}
+            <div style={{ background: '#fff', padding: '40px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div style={{ color: '#10b981', fontWeight: 800, marginBottom: '10px', textTransform: 'uppercase' }}>Bots B: Klientu Piesaiste</div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Automātiskā Kampaņa "Tāmes & SOS"</h3>
+              <div style={{ background: '#f1f5f9', padding: '20px', borderRadius: '12px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#334155' }}>
+                [ENG] 🏠 Planning a renovation? Don't pay more than you should. Use our PRO Calculators to get pinpoint accurate estimates in 30 seconds. Visit the 3D Construction Expo from March 6th and find the best verified specialists!
+                <br/><br/>
+                [LV] 🏠 Plāno remontu? Nemaksā "no gaisa" izdomātas cenas. Izmanto Platformu Centra PRO kalkulatorus un saņem precīzu tāmi 30 sekundēs. No 6. marta iepazīsties ar labākajiem meistariem mūsu 3D Metaverse hallē!
+              </div>
+              <button style={{ marginTop: '20px', padding: '10px 20px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>AKTIVIZĒT B2C BOTU</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ padding: '80px 20px', background: '#3b82f6', color: '#fff', textAlign: 'center' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '20px' }}>Pievienojies lielākajai būvniecības kopienai</h2>
-          <p style={{ fontSize: '1.3rem', marginBottom: '40px', opacity: 0.9 }}>Neatkarīgi no tā, vai esi viens meistars vai liels uzņēmums - te ir tava vieta attīstībai.</p>
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            <Link to="/login" style={{ padding: '18px 40px', background: '#000', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '8px', fontSize: '1.2rem' }}>Reģistrēties tagad</Link>
-            <Link to="/expo" style={{ padding: '18px 40px', background: '#fff', color: '#3b82f6', fontWeight: 'bold', textDecoration: 'none', borderRadius: '8px', fontSize: '1.2rem' }}>Apskatīt Izstādi</Link>
-          </div>
-        </div>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>Gatavs lielajam startam?</h2>
+        <p style={{ marginBottom: '30px', opacity: 0.9 }}>Reģistrējies un esi daļa no nākotnes.</p>
+        <Link to="/login" style={{ padding: '18px 50px', background: '#000', color: '#fff', fontWeight: 'bold', textDecoration: 'none', borderRadius: '10px', fontSize: '1.2rem', display: 'inline-block' }}>Pievienoties Platformu Centram</Link>
       </section>
     </div>
   );

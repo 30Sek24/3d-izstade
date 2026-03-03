@@ -6,207 +6,241 @@ import '../components/calculator/styles/CalculatorPro.css';
 
 export default function Dashboard() {
   const [session, setSession] = useState<Session | null>(null);
-  const [estimates, setEstimates] = useState<any[]>([]);
-  const [gameProgress, setGameProgress] = useState(0);
+  const [booth, setBooth] = useState<any>(null);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Editor State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>({});
+  const [newOffer, setNewOffer] = useState({ title: '', price: '', description: '' });
+  
+  // Seminar State
   const [showSeminarForm, setShowSeminarForm] = useState(false);
   const [seminarTitle, setSeminarTitle] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        fetchMyEstimates(session.user.id);
-        loadGameProgress();
+        fetchUserData();
       } else {
         setIsLoading(false);
       }
     });
   }, []);
 
-  const loadGameProgress = () => {
-    const saved = localStorage.getItem('biz_game_progress');
-    if (saved) {
-      const completed = JSON.parse(saved);
-      setGameProgress(Math.round((completed.length / 30) * 100));
-    }
-  };
-
-  const fetchMyEstimates = async (userId: string) => {
+  const fetchUserData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('estimate')
-        .select('id, estimate_no, status, client_name, location_address, created_at, total_amount')
-        .eq('created_by', userId)
-        .order('created_at', { ascending: false });
+      // 1. Get booth for the user's organization
+      // First, get the org_id (simplified for this demo, usually user has org_id)
+      const { data: boothData } = await supabase
+        .from('expo_booth')
+        .select('*, organization(*)')
+        .limit(1)
+        .single();
 
-      if (error) throw error;
-      setEstimates(data || []);
-    } catch (error) {
-      console.error("Kļūda ielādējot tāmes:", error);
+      if (boothData) {
+        setBooth(boothData);
+        setEditData(boothData);
+        
+        // 2. Get offers
+        const { data: offersData } = await supabase.from('booth_offer').select('*').eq('booth_id', boothData.id);
+        setOffers(offersData || []);
+
+        // 3. Get leads
+        const { data: leadsData } = await supabase.from('booth_lead').select('*').eq('booth_id', boothData.id).order('created_at', { ascending: false });
+        setLeads(leadsData || []);
+      }
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleStartSeminar = async () => {
-    if (!seminarTitle) return alert("Ievadiet semināra tēmu!");
-    alert(`Seminārs "${seminarTitle}" ir izsludināts! Jūsu stends tagad tiek reklamēts Semināru zālē.`);
-    setShowSeminarForm(false);
+  const handleUpdateBooth = async () => {
+    const { error } = await supabase.from('expo_booth').update({
+      title: editData.title,
+      subtitle: editData.subtitle,
+      description: editData.description,
+      color: editData.color
+    }).eq('id', booth.id);
+
+    if (!error) {
+      setBooth({...booth, ...editData});
+      setIsEditing(false);
+      alert("Stends atjaunināts!");
+    }
   };
 
-  if (isLoading) return <div style={{ padding: '100px', textAlign: 'center', fontSize: '1.2rem', color: '#64748b' }}>Sagatavo darba virsmu...</div>;
+  const handleAddOffer = async () => {
+    if (!newOffer.title) return;
+    const { data, error } = await supabase.from('booth_offer').insert([{
+      booth_id: booth.id,
+      ...newOffer
+    }]).select().single();
 
-  if (!session) {
-    return (
-      <div style={{ maxWidth: '500px', margin: '100px auto', padding: '40px', textAlign: 'center', background: '#fff', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
-        <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔒</div>
-        <h2 style={{ fontSize: '2rem', marginBottom: '10px' }}>Piekļuve liegta</h2>
-        <p style={{ color: '#64748b', marginBottom: '30px' }}>Lai piekļūtu savam PRO kabinetam, lūdzu, autorizējieties.</p>
-        <button onClick={() => navigate('/login')} className="btn-primary" style={{ width: '100%' }}>Ielogoties</button>
-      </div>
-    );
-  }
+    if (!error && data) {
+      setOffers([...offers, data]);
+      setNewOffer({ title: '', price: '', description: '' });
+    }
+  };
 
-  const userRole = session.user.user_metadata?.role || 'builder';
-  const roleName = {
-    builder: 'Būvniecības Meistars',
-    architect: 'Arhitekts / Dizainers',
-    materials: 'Materiālu Piegādātājs',
-    real_estate: 'Īpašumu Aģents',
-    services: 'Pakalpojumu sniedzējs'
-  }[userRole as string] || 'Lietotājs';
+  const handleStartSeminar = async () => {
+    if (!seminarTitle) return alert("Ievadiet semināra tēmu!");
+    
+    // Create a live seminar in the DB
+    const { error } = await supabase.from('expo_seminar').insert([{
+      booth_id: booth.id,
+      title: seminarTitle,
+      is_live: true,
+      scheduled_at: new Date().toISOString()
+    }]);
+
+    if (!error) {
+      alert(`Seminārs "${seminarTitle}" ir izsludināts! Jūsu stends tagad tiek reklamēts Semināru zālē.`);
+      setShowSeminarForm(false);
+      setSeminarTitle('');
+    } else {
+      alert("Kļūda izsludinot semināru.");
+    }
+  };
+
+  if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}>Ielādē vadības paneli...</div>;
+
+  if (!session) return <div style={{ padding: '100px', textAlign: 'center' }}>Lūdzu, ielogojieties.</div>;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
       
-      {/* Header Profile */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>Sveiki, {session.user.email?.split('@')[0]}!</h1>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-            <span style={{ padding: '4px 12px', background: '#3b82f615', color: '#3b82f6', borderRadius: '50px', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>{roleName}</span>
-            <span style={{ padding: '4px 12px', background: '#10b98115', color: '#10b981', borderRadius: '50px', fontSize: '0.85rem', fontWeight: 800 }}>PRO STATUSS</span>
-          </div>
-        </div>
+        <h1 style={{ fontWeight: 900, fontSize: '2.5rem' }}>PRO Kabinets</h1>
         <div style={{ display: 'flex', gap: '15px' }}>
-          <button onClick={() => setShowSeminarForm(true)} className="btn-secondary" style={{ padding: '12px 25px', background: '#8b5cf6', color: '#fff', borderColor: '#8b5cf6' }}>🎤 Rīkot Semināru</button>
-          <button onClick={() => navigate('/expo')} className="btn-secondary" style={{ padding: '12px 25px' }}>Mans 3D Stends</button>
-          <button onClick={() => navigate('/kalkulators')} className="btn-primary" style={{ padding: '12px 25px', background: '#3b82f6' }}>+ Jauna Tāme</button>
+          <button onClick={() => setShowSeminarForm(true)} className="btn-secondary" style={{ background: '#8b5cf6', color: '#fff', border: 'none' }}>🎤 Rīkot Semināru</button>
+          <button onClick={() => navigate('/expo')} className="btn-secondary">Apskatīt Halli</button>
+          {booth && <Link to={`/expo/stends/${booth.slug || booth.id}`} className="btn-primary" style={{ background: booth.color }}>Mans 3D Stends</Link>}
         </div>
       </div>
 
       {showSeminarForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', width: '400px' }}>
-            <h2 style={{ marginBottom: '20px' }}>Izsludināt Semināru</h2>
-            <input type="text" placeholder="Semināra tēma" value={seminarTitle} onChange={(e) => setSeminarTitle(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #ddd' }} />
-            <button onClick={handleStartSeminar} className="btn-primary" style={{ width: '100%', background: '#8b5cf6' }}>PUBLICĒT REKLĀMU</button>
+          <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', width: '450px' }}>
+            <h2 style={{ marginBottom: '10px' }}>Izsludināt Semināru</h2>
+            <p style={{ color: '#64748b', marginBottom: '25px' }}>Jūsu uzņēmums parādīsies uz lielā ekrāna Semināru zālē.</p>
+            <input 
+              type="text" placeholder="Semināra tēma (piem. Inovācijas būvniecībā)" 
+              value={seminarTitle} onChange={(e) => setSeminarTitle(e.target.value)} 
+              style={{ width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #ddd' }} 
+            />
+            <button onClick={handleStartSeminar} className="btn-primary" style={{ width: '100%', background: '#8b5cf6' }}>SĀKT TIEŠRAIDI</button>
             <button onClick={() => setShowSeminarForm(false)} style={{ width: '100%', background: 'none', border: 'none', marginTop: '10px', color: '#64748b', cursor: 'pointer' }}>Atcelt</button>
           </div>
         </div>
       )}
 
-      {/* Grid Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', marginBottom: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '40px' }}>
         
-        {/* Card 1: Game Progress */}
-        <div style={{ background: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          <h3 style={{ fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>Biznesa Izaicinājums</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '10px' }}>{gameProgress}%</div>
-          <div style={{ background: '#f1f5f9', height: '8px', borderRadius: '10px', overflow: 'hidden', marginBottom: '15px' }}>
-            <div style={{ width: `${gameProgress}%`, background: '#8b5cf6', height: '100%' }}></div>
-          </div>
-          <Link to="/bizness30" style={{ color: '#8b5cf6', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>Turpināt uzdevumus →</Link>
-        </div>
+        {/* LEFT COLUMN: BOOTH MANAGEMENT */}
+        <div>
+          <section className="calc-section" style={{ borderLeftColor: booth?.color || '#3b82f6' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2>3D Stenda Informācija</h2>
+              <button onClick={() => setIsEditing(!isEditing)} className="btn-secondary" style={{ padding: '5px 15px' }}>{isEditing ? 'Atcelt' : 'Rediģēt'}</button>
+            </div>
 
-        {/* Card 2: Estimates Stat */}
-        <div style={{ background: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          <h3 style={{ fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>Aktīvās Tāmes</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '10px' }}>{estimates.length}</div>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Kopējā vērtība: <strong style={{color: '#0f172a'}}>{estimates.reduce((acc, curr) => acc + (curr.total_amount || 0), 0).toFixed(0)} €</strong></p>
-        </div>
-
-        {/* Card 3: New Leads */}
-        <div style={{ background: '#fff', padding: '30px', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          <h3 style={{ fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' }}>Jauni Pasūtījumi</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#10b981', marginBottom: '10px' }}>3</div>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>Pieteikumi no Expo Info Galda</p>
-        </div>
-
-      </div>
-
-      {/* Estimates Table */}
-      <div style={{ background: '#fff', borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
-        <div style={{ padding: '25px 30px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Pēdējie aprēķini</h2>
-          <Link to="/kalkulators" style={{ fontSize: '0.9rem', fontWeight: 700, color: '#3b82f6', textDecoration: 'none' }}>Skatīt visus</Link>
-        </div>
-        
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', background: '#f8fafc' }}>
-              <th style={{ padding: '15px 30px', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Nr.</th>
-              <th style={{ padding: '15px', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Klients / Adrese</th>
-              <th style={{ padding: '15px', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Statuss</th>
-              <th style={{ padding: '15px', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Summa</th>
-              <th style={{ padding: '15px 30px', textAlign: 'right', color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Darbības</th>
-            </tr>
-          </thead>
-          <tbody>
-            {estimates.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📄</div>
-                  Jums vēl nav saglabātu tāmju. Sāciet ar jaunu aprēķinu!
-                </td>
-              </tr>
+            {isEditing ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <label>Uzņēmuma Nosaukums
+                  <input type="text" value={editData.title} onChange={e => setEditData({...editData, title: e.target.value})} />
+                </label>
+                <label>Saukilis / Nozare
+                  <input type="text" value={editData.subtitle} onChange={e => setEditData({...editData, subtitle: e.target.value})} />
+                </label>
+                <label>Apraksts
+                  <textarea rows={4} value={editData.description} onChange={e => setEditData({...editData, description: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                </label>
+                <label>Zīmola Krāsa (HEX)
+                  <input type="color" value={editData.color} onChange={e => setEditData({...editData, color: e.target.value})} style={{ height: '50px' }} />
+                </label>
+                <button onClick={handleUpdateBooth} className="btn-primary" style={{ background: editData.color }}>SAGLABĀT IZMAIŅAS</button>
+              </div>
             ) : (
-              estimates.slice(0, 5).map((est) => (
-                <tr key={est.id} style={{ borderBottom: '1px solid #f8fafc' }}>
-                  <td style={{ padding: '20px 30px', fontWeight: 700, color: '#334155' }}>{est.estimate_no}</td>
-                  <td style={{ padding: '20px' }}>
-                    <div style={{ fontWeight: 700, color: '#0f172a' }}>{est.client_name || 'Privātpersona'}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{est.location_address || 'Nav norādīta'}</div>
-                  </td>
-                  <td style={{ padding: '20px' }}>
-                    <span style={{ 
-                      padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800,
-                      background: est.status === 'draft' ? '#fff7ed' : '#f0fdf4',
-                      color: est.status === 'draft' ? '#c2410c' : '#16a34a',
-                      border: `1px solid ${est.status === 'draft' ? '#ffedd5' : '#dcfce7'}`
-                    }}>
-                      {est.status === 'draft' ? 'MELNRAKSTS' : 'NOSŪTĪTS'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '20px', fontWeight: 800, color: '#0f172a' }}>
-                    {(est.total_amount || 0).toFixed(0)} €
-                  </td>
-                  <td style={{ padding: '20px 30px', textAlign: 'right' }}>
-                    <button style={{ padding: '8px 15px', background: '#f1f5f9', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, color: '#475569' }}>Atvērt PDF</button>
-                  </td>
-                </tr>
-              ))
+              <div>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                  <div style={{ width: '60px', height: '60px', background: booth?.color, borderRadius: '12px' }}></div>
+                  <div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{booth?.title}</div>
+                    <div style={{ color: '#64748b' }}>{booth?.subtitle}</div>
+                  </div>
+                </div>
+                <p style={{ marginTop: '20px', color: '#475569', lineHeight: 1.6 }}>{booth?.description || 'Nav pievienots apraksts.'}</p>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
+          </section>
 
-      {/* Quick Links */}
-      <div style={{ marginTop: '40px', display: 'flex', gap: '20px' }}>
-        <div style={{ flex: 1, background: 'linear-gradient(135deg, #0f172a, #334155)', padding: '30px', borderRadius: '24px', color: '#fff' }}>
-          <h3 style={{ margin: '0 0 10px 0' }}>Vajadzīgs atbalsts?</h3>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '20px' }}>Mūsu dežuranti ir pieejami 24/7, lai palīdzētu ar sistēmas lietošanu.</p>
-          <button style={{ padding: '10px 20px', background: '#fff', color: '#0f172a', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Čatot ar atbalstu</button>
-        </div>
-        <div style={{ flex: 1, background: '#fefce8', border: '1px solid #fef08a', padding: '30px', borderRadius: '24px' }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#854d0e' }}>Mārketinga Padoms</h3>
-          <p style={{ color: '#a16207', fontSize: '0.9rem', marginBottom: '20px' }}>Pievieno "Pirms/Pēc" bildes savam profilam, lai piesaistītu par 40% vairāk klientu.</p>
-          <button style={{ padding: '10px 20px', background: '#eab308', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Atjaunot Portfolio</button>
-        </div>
-      </div>
+          <section className="calc-section" style={{ marginTop: '30px' }}>
+            <h2>Pakalpojumi un Piedāvājumi</h2>
+            <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '20px', borderRadius: '12px' }}>
+              <h4>Pievienot jaunu:</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '10px', marginTop: '10px' }}>
+                <input type="text" placeholder="Nosaukums" value={newOffer.title} onChange={e => setNewOffer({...newOffer, title: e.target.value})} />
+                <input type="text" placeholder="Cena" value={newOffer.price} onChange={e => setNewOffer({...newOffer, price: e.target.value})} />
+              </div>
+              <textarea placeholder="Apraksts" value={newOffer.description} onChange={e => setNewOffer({...newOffer, description: e.target.value})} style={{ width: '100%', marginTop: '10px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} />
+              <button onClick={handleAddOffer} className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>PIEVIENOT SARAKSTAM</button>
+            </div>
 
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {offers.map(offer => (
+                <li key={offer.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', borderBottom: '1px solid #f1f5f9' }}>
+                  <div>
+                    <strong>{offer.title}</strong>
+                    <div style={{ fontSize: '0.85rem', color: '#64748b' }}>{offer.description}</div>
+                  </div>
+                  <div style={{ fontWeight: 'bold' }}>{offer.price}</div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        {/* RIGHT COLUMN: LEADS & STATS */}
+        <div>
+          <section className="calc-section" style={{ background: '#0f172a', color: '#fff' }}>
+            <h2 style={{ color: '#fff' }}>Jaunākie Klienti (Leads)</h2>
+            {leads.length === 0 ? (
+              <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>Vēl nav saņemts neviens pieteikums.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+                {leads.map(lead => (
+                  <div key={lead.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '10px', borderLeft: '4px solid #10b981' }}>
+                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{lead.name}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{new Date(lead.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#10b981', margin: '5px 0' }}>📞 {lead.phone}</div>
+                    <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: 0 }}>{lead.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="calc-section" style={{ marginTop: '30px' }}>
+            <h2>Statistika</h2>
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              <div style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Stenda Apmeklējumi</div>
+              <div style={{ fontSize: '3rem', fontWeight: 900 }}>428</div>
+              <div style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 'bold' }}>+12% šonedēļ</div>
+            </div>
+          </section>
+        </div>
+
+      </div>
     </div>
   );
 }
