@@ -2,26 +2,40 @@ import { useState, useEffect } from 'react';
 import '../components/calculator/styles/CalculatorPro.css';
 import { supabase } from '../lib/supabase';
 
+interface Autopilot {
+  id: string;
+  is_active: boolean;
+  total_reach: number;
+  total_leads: number;
+  last_run_at: string;
+}
+
 export default function MarketingAutopilot() {
-  const [autopilots, setAutopilots] = useState<any[]>([]);
+  const [autopilots, setAutopilots] = useState<Autopilot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchAutopilotStatus = async () => {
-    const { data } = await supabase.from('marketing_autopilot').select('*');
-    if (data) setAutopilots(data);
-    setIsLoading(false);
-  };
-
   useEffect(() => {
-    fetchAutopilotStatus();
+    let isMounted = true;
+    const load = async () => {
+      const { data } = await supabase.from('marketing_autopilot').select('*');
+      if (isMounted) {
+        if (data) setAutopilots(data);
+        setIsLoading(false);
+      }
+    };
+    load();
+
     const subscription = supabase
       .channel('autopilot_changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'marketing_autopilot' }, (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'marketing_autopilot' }, (payload: { new: Autopilot }) => {
         setAutopilots(current => current.map(a => a.id === payload.new.id ? payload.new : a));
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(subscription); };
+    return () => { 
+      isMounted = false;
+      supabase.removeChannel(subscription); 
+    };
   }, []);
 
   const toggleAutopilot = async (id: string, currentState: boolean) => {
@@ -74,28 +88,29 @@ export default function MarketingAutopilot() {
           </div>
           <p style={{ color: '#64748b', marginBottom: '30px' }}>Automātiski uzrunā Eiropas būvniecības firmas, arhitektus un materiālu tirgotājus LinkedIn un e-pasta vidē.</p>
           <button 
-            onClick={() => toggleAutopilot('b2b_bots', b2b?.is_active)}
+            onClick={() => toggleAutopilot('b2b_bots', b2b?.is_active ?? false)}
             style={{ width: '100%', padding: '15px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer', background: b2b?.is_active ? '#ef4444' : '#8b5cf6', color: '#fff' }}
           >
             {b2b?.is_active ? 'APTURĒT BOTU' : 'AKTIVIZĒT GLOBĀLO MEKLĒŠANU'}
           </button>
-        </div>
+          </div>
 
-        {/* B2C BOT */}
-        <div style={{ background: '#fff', padding: '40px', borderRadius: '24px', border: b2c?.is_active ? '3px solid #10b981' : '1px solid #e2e8f0', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+          {/* B2C BOT */}
+          <div style={{ background: '#fff', padding: '40px', borderRadius: '24px', border: b2c?.is_active ? '3px solid #10b981' : '1px solid #e2e8f0', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '1.5rem', margin: 0 }}>📣 B2C Bots (Klienti)</h2>
+            <h2 style={{ fontSize: '1.5rem', margin: 0 }}>🚀 B2C Bots (Klienti)</h2>
             <div style={{ padding: '5px 15px', borderRadius: '50px', background: b2c?.is_active ? '#10b981' : '#f1f5f9', color: b2c?.is_active ? '#fff' : '#64748b', fontSize: '0.75rem', fontWeight: 'bold' }}>
               {b2c?.is_active ? 'AKTĪVS' : 'PAUZĒTS'}
             </div>
           </div>
           <p style={{ color: '#64748b', marginBottom: '30px' }}>Pārvalda Google un Facebook reklāmas budžetus, lai virzītu mājokļu īpašniekus uz tāmju kalkulatoriem.</p>
           <button 
-            onClick={() => toggleAutopilot('b2c_bots', b2c?.is_active)}
+            onClick={() => toggleAutopilot('b2c_bots', b2c?.is_active ?? false)}
             style={{ width: '100%', padding: '15px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer', background: b2c?.is_active ? '#ef4444' : '#10b981', color: '#fff' }}
           >
             {b2c?.is_active ? 'APTURĒT REKLĀMAS' : 'PALAIST KLIENTU PLŪSMU'}
           </button>
+
         </div>
 
       </div>

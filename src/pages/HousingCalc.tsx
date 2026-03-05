@@ -46,7 +46,7 @@ export default function HousingCalc() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    let finalValue: any = value;
+    let finalValue: string | number | boolean = value;
     if (type === 'checkbox') finalValue = (e.target as HTMLInputElement).checked;
     else if (type === 'number') finalValue = parseFloat(value) || 0;
     setParams(prev => ({ ...prev, [name]: finalValue }));

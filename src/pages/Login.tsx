@@ -90,15 +90,16 @@ export default function Login() {
         if (error) throw error;
         navigate('/dashboard');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Auth process error:", error);
+      const err = error as { message?: string };
       
-      let friendlyError = error.message || "Radās kļūda autentifikācijā.";
-      if (error.message.includes('Email not confirmed')) {
+      let friendlyError = err.message || "Radās kļūda autentifikācijā.";
+      if (err.message?.includes('Email not confirmed')) {
         friendlyError = "Lūdzu apstiprini savu e-pastu, noklikšķinot uz saites, kuru mēs tev nosūtījām (Pārbaudi arī Spam/Mēstuļu mapi).";
-      } else if (error.message.includes('Invalid login credentials')) {
+      } else if (err.message?.includes('Invalid login credentials')) {
         friendlyError = "Nepareizs e-pasts vai parole.";
-      } else if (error.message.includes('User already registered')) {
+      } else if (err.message?.includes('User already registered')) {
         friendlyError = "Lietotājs ar šādu e-pastu jau eksistē. Lūdzu ielogojies.";
       }
       

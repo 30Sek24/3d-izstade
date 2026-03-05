@@ -39,7 +39,7 @@ export default function Calculator() {
         {CATEGORIES.map(cat => (
           <div 
             key={cat.id}
-            onClick={() => setSelectedModule(cat.id as any)}
+            onClick={() => setSelectedModule(cat.id as typeof MODULES[number])}
             style={{ 
               background: '#fff', padding: '40px', borderRadius: '24px', border: '1px solid #e2e8f0', cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', textAlign: 'center',

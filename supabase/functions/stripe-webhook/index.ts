@@ -28,13 +28,14 @@ serve(async (req: Request) => {
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
-    } catch (err: any) {
-      console.error(`Webhook signature verification failed: ${err.message}`);
-      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    } catch (err: unknown) {
+      const e = err as Error;
+      console.error(`Webhook signature verification failed: ${e.message}`);
+      return new Response(`Webhook Error: ${e.message}`, { status: 400 });
     }
 
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as any;
+      const session = event.data.object as Stripe.Checkout.Session;
       const campaignId = session.client_reference_id;
 
       if (campaignId) {
@@ -54,9 +55,10 @@ serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const e = err as Error;
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: e.message }),
       { status: 400 }
     );
   }

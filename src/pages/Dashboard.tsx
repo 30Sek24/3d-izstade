@@ -4,17 +4,57 @@ import type { Session } from '@supabase/supabase-js';
 import { Link, useNavigate } from 'react-router-dom';
 import '../components/calculator/styles/CalculatorPro.css';
 
+interface Booth {
+  id: string;
+  org_id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  color: string;
+  slug?: string;
+  organization?: unknown;
+}
+
+interface Offer {
+  id: string;
+  booth_id: string;
+  title: string;
+  price: string;
+  description: string;
+}
+
+interface Lead {
+  id: string;
+  booth_id: string;
+  name: string;
+  phone: string;
+  message: string;
+  created_at: string;
+}
+
+interface Campaign {
+  id: string;
+  org_id: string;
+  slot_id: string;
+  media_url: string;
+  media_type: 'video' | 'image';
+  link_url: string;
+  is_active: boolean;
+  start_date: string;
+  end_date: string;
+}
+
 export default function Dashboard() {
   const [session, setSession] = useState<Session | null>(null);
-  const [booth, setBooth] = useState<any>(null);
-  const [offers, setOffers] = useState<any[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [booth, setBooth] = useState<Booth | null>(null);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<any>({});
+  const [editData, setEditData] = useState<Partial<Booth>>({});
   const [newOffer, setNewOffer] = useState({ title: '', price: '', description: '' });
   
   // Seminar State
@@ -66,6 +106,7 @@ export default function Dashboard() {
   };
 
   const handleUpdateBooth = async () => {
+    if (!booth) return;
     const { error } = await supabase.from('expo_booth').update({
       title: editData.title,
       subtitle: editData.subtitle,
@@ -74,16 +115,16 @@ export default function Dashboard() {
     }).eq('id', booth.id);
 
     if (!error) {
-      setBooth({...booth, ...editData});
+      setBooth(prev => prev ? {...prev, ...editData} : null);
       setIsEditing(false);
       alert("Stends atjaunināts!");
     }
   };
 
   const handleAddOffer = async () => {
-    if (!newOffer.title) return;
+    if (!newOffer.title || !booth) return;
     const { data, error } = await supabase.from('booth_offer').insert([{
-      booth_id: booth.id,
+      booth_id: booth?.id,
       ...newOffer
     }]).select().single();
 
@@ -96,7 +137,7 @@ export default function Dashboard() {
   const handleStartSeminar = async () => {
     if (!seminarTitle) return alert("Ievadiet semināra tēmu!");
     const { error } = await supabase.from('expo_seminar').insert([{
-      booth_id: booth.id,
+      booth_id: booth?.id,
       title: seminarTitle,
       is_live: true,
       scheduled_at: new Date().toISOString()
@@ -110,7 +151,7 @@ export default function Dashboard() {
   };
 
   const handleBuyAd = async () => {
-    if (!newCampaign.media_url) return alert("Norādiet banera vai video URL!");
+    if (!newCampaign.media_url || !booth) return alert("Norādiet banera URL vai ielogojieties.");
     
     // Create inactive campaign in DB
     const { data: campaign, error } = await supabase.from('ad_campaign').insert([{

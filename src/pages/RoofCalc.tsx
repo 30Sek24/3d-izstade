@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import '../components/calculator/styles/CalculatorPro.css';
 import { COUNTRIES, renderCountryOptions } from '../lib/constants';
+import { useLocalStorage } from '../lib/useLocalStorage';
 
 // ------------------------------------------------------------------
 // DATUBĀZE: Jumtu un noteksistēmu detaļas
@@ -33,7 +34,7 @@ const PRICES = {
 };
 
 export default function RoofCalc() {
-  const [params, setParams] = useState({
+  const [params, setParams] = useLocalStorage('calc_params_roof', {
     country: 'lv',
     houseArea: 100, // Mājas pamata platība
     roofType: 'gable', // gable (divslīpju), hip (četrslīpju), flat (plakanais)
@@ -49,7 +50,7 @@ export default function RoofCalc() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    let finalValue: any = value;
+    let finalValue: string | number | boolean = value;
     if (type === 'checkbox') finalValue = (e.target as HTMLInputElement).checked;
     else if (type === 'number') finalValue = parseFloat(value) || 0;
     

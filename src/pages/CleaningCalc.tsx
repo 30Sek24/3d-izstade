@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import '../components/calculator/styles/CalculatorPro.css';
 import { COUNTRIES, renderCountryOptions } from '../lib/constants';
+import { useLocalStorage } from '../lib/useLocalStorage';
 
 const PRICES = {
   types: {
@@ -15,7 +16,7 @@ const PRICES = {
 };
 
 export default function CleaningCalc() {
-  const [params, setParams] = useState({
+  const [params, setParams] = useLocalStorage('calc_params_cleaning', {
     country: 'lv',
     address: 'Rīga, Centrs',
     area: 100,
@@ -29,7 +30,7 @@ export default function CleaningCalc() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    let finalValue: any = value;
+    let finalValue: string | number | boolean = value;
     if (type === 'number') finalValue = parseFloat(value) || 0;
     
     setParams(prev => ({ ...prev, [name]: finalValue }));

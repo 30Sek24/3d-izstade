@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useState } from 'react';
 import type { EstimateLine, Section } from '../../lib/calculator-types';
 
 interface PdfDocumentProps {
@@ -16,8 +16,9 @@ interface PdfDocumentProps {
 }
 
 const PdfDocument = forwardRef<HTMLDivElement, PdfDocumentProps>(({ lines, sections, totals, clientName, projectName }, ref) => {
-  // Ģenerējam tāmes numuru tikai vienreiz pie komponentes izveides
-  const docNumber = useMemo(() => Math.floor(Math.random() * 10000), []);
+  // Ģenerējam tāmes numuru un datumu tikai vienreiz pie komponentes izveides
+  const [docNumber] = useState(() => Math.floor(Math.random() * 10000));
+  const [docDate] = useState(() => new Date().toLocaleDateString('lv-LV'));
 
   // Grupējam rindas pa sadaļām drukāšanai
   const linesBySection: Record<string, EstimateLine[]> = {};
@@ -46,7 +47,7 @@ const PdfDocument = forwardRef<HTMLDivElement, PdfDocumentProps>(({ lines, secti
         <header style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #eab308', paddingBottom: '20px', marginBottom: '30px' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '24px', color: '#111827' }}>PIEDĀVĀJUMS / TĀME</h1>
-            <p style={{ margin: '5px 0 0 0', color: '#6b7280' }}>Datums: {new Date().toLocaleDateString('lv-LV')}</p>
+            <p style={{ margin: '5px 0 0 0', color: '#6b7280' }}>Datums: {docDate}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <h2 style={{ margin: 0, fontSize: '20px', color: '#eab308' }}>Platformu Centrs</h2>

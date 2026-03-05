@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import OpenAI from 'openai';
 
+interface OracleResult {
+  prediction: string;
+  recommendation: string;
+  estimated_income_2030: number | string;
+  risk_level: string;
+}
+
 export default function FutureOracle() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<OracleResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState(localStorage.getItem('openai_key') || '');
   const [error, setError] = useState('');
@@ -47,10 +54,11 @@ export default function FutureOracle() {
 
       const content = response.choices[0].message.content;
       if (content) {
-        setResult(JSON.parse(content));
+        setResult(JSON.parse(content) as OracleResult);
       }
-    } catch (err: any) {
-      setError('Kļūda: ' + (err.message || 'Neizdevās sazināties ar AI'));
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Neizdevās sazināties ar AI';
+      setError('Kļūda: ' + errorMsg);
     } finally {
       setLoading(false);
     }

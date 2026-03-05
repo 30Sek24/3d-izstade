@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   OBJECT_TYPES, LOCATION_OPTIONS, QUALITY_LEVELS, MODULES,
   calculateEstimate 
 } from '../../lib/calculator';
-import type { CalculatorInput, EstimateResult } from '../../lib/calculator';
+import type { CalculatorInput } from '../../lib/calculator';
 import './styles/CalculatorPro.css';
 
 interface Props {
@@ -31,11 +31,7 @@ export default function CalculatorEditor({ initialModule = 'renovation' }: Props
     windowCount: 2,
   });
 
-  const [estimate, setEstimate] = useState<EstimateResult | null>(null);
-
-  useEffect(() => {
-    setEstimate(calculateEstimate({ ...input, mode }));
-  }, [input, mode]);
+  const estimate = useMemo(() => calculateEstimate({ ...input, mode }), [input, mode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
