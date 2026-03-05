@@ -1,20 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const trustPills = [
-  "Bezmaksas sākuma aprēķins",
-  "Aptuvens budžets 30 sekundēs",
-  "BOQ + pieņēmumu skaidrība",
-  "Pēc piekrišanas: līdz 3 meistariem"
-];
-
 const topCalculations = [
-  { title: "Vannas istabas remonts", range: "no ~5 800 EUR", href: "/apdare" },
-  { title: "Virtuves remonts", range: "no ~4 200 EUR", href: "/apdare" },
-  { title: "Flīzēšana", range: "no ~28 EUR/m²", href: "/apdare" },
-  { title: "Krāsošana", range: "no ~8 EUR/m²", href: "/apdare" },
-  { title: "Grīdas segumi", range: "no ~18 EUR/m²", href: "/apdare" },
-  { title: "Elektro darbi", range: "no ~35 EUR/punkts", href: "/apdare" }
+  { title: "Vannas istabas remonts", range: "no ~5 800 EUR", href: "/apdare", icon: "🚿" },
+  { title: "Virtuves remonts", range: "no ~4 200 EUR", href: "/apdare", icon: "🍳" },
+  { title: "Flīzēšana", range: "no ~28 EUR/m²", href: "/apdare", icon: "🧱" },
+  { title: "Krāsošana", range: "no ~8 EUR/m²", href: "/apdare", icon: "🎨" },
+  { title: "Grīdas segumi", range: "no ~18 EUR/m²", href: "/apdare", icon: "🪵" },
+  { title: "Elektro darbi", range: "no ~35 EUR/punkts", href: "/apdare", icon: "⚡" }
 ];
 
 export default function Home() {
@@ -37,56 +30,56 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ background: '#020617', color: '#fff' }}>
+    <div style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
       
       {/* HERO SECTION */}
       <section style={{ 
-        padding: '120px 24px 80px', 
+        padding: '160px 24px 100px', 
         textAlign: 'center', 
-        background: 'radial-gradient(circle at center, #1e293b 0%, #020617 100%)',
+        background: 'radial-gradient(circle at 50% -20%, #1e293b 0%, var(--bg-main) 70%)',
         position: 'relative',
         overflow: 'hidden'
       }}>
         {/* Glow Effects */}
-        <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '600px', background: 'rgba(59, 130, 246, 0.1)', filter: 'blur(100px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1000px', height: '400px', background: 'rgba(59, 130, 246, 0.15)', filter: 'blur(120px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
-        <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '8px 20px', borderRadius: '50px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', marginBottom: '30px', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            <span style={{ width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 10px #3b82f6' }}></span>
-            Metaverse Construction Hub 2026
+        <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div className="glass-card" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '8px 24px', borderRadius: '50px', marginBottom: '40px', borderColor: 'var(--accent-primary)' }}>
+            <span style={{ width: '8px', height: '8px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 15px var(--accent-primary)' }}></span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: 'var(--accent-primary)' }}>Metaverse Construction Hub 2026</span>
           </div>
           
-          <h1 style={{ fontSize: '5.5rem', fontWeight: 950, letterSpacing: '-4px', lineHeight: 0.9, marginBottom: '25px' }}>
+          <h1 style={{ fontSize: '6rem', fontWeight: 950, letterSpacing: '-5px', lineHeight: 0.85, marginBottom: '35px' }}>
             Remonta tāme <br/>
-            <span style={{ color: '#3b82f6' }}>30 sekundēs.</span>
+            <span style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>snaipera precizitātē.</span>
           </h1>
           
-          <p style={{ fontSize: '1.4rem', color: '#94a3b8', marginBottom: '50px', maxWidth: '800px', margin: '0 auto 50px', lineHeight: 1.5 }}>
-            Pirmā ekosistēma, kas apvieno snaipera precizitātes tāmju ģeneratorus un globālu 3D Metaverse Expo izstādi.
+          <p style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginBottom: '60px', maxWidth: '850px', margin: '0 auto 60px', lineHeight: 1.4, fontWeight: 400 }}>
+            Pasaulē pirmā ekosistēma, kas apvieno augstas precizitātes AI tāmju ģeneratorus ar globālu 3D Metaverse Expo izstādi.
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '80px' }}>
-            <Link to="/kalkulators" style={{ padding: '20px 40px', background: '#3b82f6', color: '#fff', fontWeight: 800, textDecoration: 'none', borderRadius: '12px', fontSize: '1.2rem', boxShadow: '0 20px 40px -10px rgba(59, 130, 246, 0.5)' }}>Sākt aprēķinu</Link>
-            <Link to="/expo" style={{ padding: '20px 40px', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 800, textDecoration: 'none', borderRadius: '12px', fontSize: '1.2rem', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>Ieeja 3D Expo</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '100px' }}>
+            <Link to="/kalkulators" className="btn-pro btn-pro-primary" style={{ padding: '24px 48px', fontSize: '1.25rem' }}>Sākt bezmaksas aprēķinu</Link>
+            <Link to="/expo" className="btn-pro btn-pro-secondary" style={{ padding: '24px 48px', fontSize: '1.25rem' }}>Ieeja 3D Expo Hallē</Link>
           </div>
 
           {/* LAUNCH COUNTER */}
-          <div style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.05)', padding: '30px', borderRadius: '24px', display: 'inline-flex', gap: '40px', backdropFilter: 'blur(10px)' }}>
+          <div className="glass-card" style={{ padding: '40px', display: 'inline-flex', gap: '60px', alignItems: 'center' }}>
              <div style={{ textAlign: 'left' }}>
-               <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', marginBottom: '5px' }}>Lielā atklāšana</div>
-               <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>06.03.2026.</div>
+               <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '1px' }}>Lielā atklāšana</div>
+               <div style={{ fontSize: '2rem', fontWeight: 900 }}>06. MARTĀ</div>
              </div>
-             <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
-             <div style={{ display: 'flex', gap: '25px' }}>
+             <div style={{ width: '1px', height: '50px', background: 'var(--border-glass)' }}></div>
+             <div style={{ display: 'flex', gap: '40px' }}>
                {[
-                 { val: timeLeft.d, unit: 'd' },
-                 { val: timeLeft.h, unit: 'h' },
-                 { val: timeLeft.m, unit: 'm' },
-                 { val: timeLeft.s, unit: 's' }
+                 { val: timeLeft.d, unit: 'DIENAS' },
+                 { val: timeLeft.h, unit: 'STUNDAS' },
+                 { val: timeLeft.m, unit: 'MINŪTES' },
+                 { val: timeLeft.s, unit: 'SEKUNDES' }
                ].map((t, i) => (
-                 <div key={i} style={{ textAlign: 'center' }}>
-                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fff' }}>{t.val}</div>
-                   <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>{t.unit}</div>
+                 <div key={i} style={{ textAlign: 'center', minWidth: '80px' }}>
+                   <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{String(t.val).padStart(2, '0')}</div>
+                   <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t.unit}</div>
                  </div>
                ))}
              </div>
@@ -94,90 +87,57 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
-      <section style={{ padding: '20px', background: '#0f172a', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-around', gap: '20px', flexWrap: 'wrap' }}>
-          {trustPills.map((pill, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 600 }}>
-              <span style={{ color: '#10b981' }}>✓</span> {pill}
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* POPULAR CALCS */}
-      <section style={{ padding: '100px 24px', background: '#020617' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '60px' }}>
-            <div>
-              <h2 style={{ fontSize: '3rem', fontWeight: 900, letterSpacing: '-2px', marginBottom: '10px' }}>Populārākie aprēķini</h2>
-              <p style={{ color: '#64748b', fontSize: '1.2rem' }}>Saņem precīzu orientieri savam projektam pāris sekundēs.</p>
+      <section style={{ padding: '120px 24px', background: 'var(--bg-main)' }}>
+        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '80px' }}>
+            <div className="animate-fade-in">
+              <h2 style={{ fontSize: '3.5rem', fontWeight: 900, letterSpacing: '-3px', marginBottom: '15px' }}>Populārākie rīki</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.3rem', maxWidth: '600px' }}>Saņem precīzu projekta specifikāciju un izmaksu kontroli pāris sekundēs.</p>
             </div>
-            <Link to="/kalkulators" style={{ color: '#3b82f6', fontWeight: 700, textDecoration: 'none' }}>Skatīt visus →</Link>
+            <Link to="/kalkulators" style={{ color: 'var(--accent-primary)', fontWeight: 700, textDecoration: 'none', fontSize: '1.1rem' }}>Visi kalkulatori →</Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '30px' }}>
             {topCalculations.map((item, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '40px', borderRadius: '24px', transition: 'all 0.3s', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)'; }}>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '10px' }}>{item.title}</h3>
-                <p style={{ color: '#94a3b8', marginBottom: '25px', fontSize: '1rem' }}>Aptuvenais sākuma līmenis: <span style={{ color: '#fff', fontWeight: 700 }}>{item.range}</span></p>
-                <Link to={item.href} style={{ display: 'inline-block', padding: '12px 24px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', fontWeight: 700, textDecoration: 'none', borderRadius: '8px', fontSize: '0.9rem' }}>Aprēķināt precīzāk</Link>
+              <div key={i} className="glass-card" style={{ padding: '40px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }} 
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = 'var(--accent-primary)'; }}>
+                <div style={{ fontSize: '3rem', marginBottom: '25px' }}>{item.icon}</div>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '12px' }}>{item.title}</h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '1.1rem' }}>No <span style={{ color: '#fff', fontWeight: 700 }}>{item.range}</span></p>
+                <Link to={item.href} className="btn-pro btn-pro-secondary" style={{ width: '100%' }}>Atvērt PRO rīku</Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3D EXPO PREVIEW */}
-      <section style={{ padding: '100px 24px', background: '#0f172a' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{ width: '100%', aspectRatio: '16/9', background: '#1e293b', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 40px 100px -20px rgba(0,0,0,0.5)' }}>
-               <div style={{ fontSize: '5rem' }}>🏗️</div>
-               <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(15, 23, 42, 0.8)', padding: '10px 20px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800, backdropFilter: 'blur(5px)' }}>
-                 LIVE PREVIEW: HALL A
-               </div>
-            </div>
+      {/* METAVERSE SECTION */}
+      <section style={{ padding: '140px 24px', background: '#0f172a', position: 'relative' }}>
+        <div style={{ maxWidth: '1240px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '100px', alignItems: 'center' }}>
+          <div className="glass-card" style={{ position: 'relative', aspectRatio: '16/10', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '0' }}>
+             <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1200&q=80" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }} alt="3D Expo" />
+             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--bg-main), transparent)' }}></div>
+             <div style={{ position: 'absolute', fontSize: '1.5rem', fontWeight: 900, letterSpacing: '4px', textTransform: 'uppercase' }}>ENTER THE METAVERSE</div>
           </div>
           <div>
-            <div style={{ color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '15px', fontSize: '0.9rem' }}>Nākotne ir klāt</div>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 950, letterSpacing: '-3px', lineHeight: 1, marginBottom: '30px' }}>3D Metaverse <br/>Izstādes Halle</h2>
-            <p style={{ fontSize: '1.25rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '40px' }}>
-              Nestaigā pa garlaicīgiem sarakstiem. Ienāc interaktīvā 3D vidē, apskati meistaru portfolio, rīko tiešraides seminārus un atrodi labākos sadarbības partnerus reāllaikā.
+            <div style={{ color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '20px', fontSize: '0.9rem' }}>Nākotnes Būvniecība</div>
+            <h2 style={{ fontSize: '4.5rem', fontWeight: 950, letterSpacing: '-4px', lineHeight: 0.95, marginBottom: '35px' }}>3D Expo <br/>Halle</h2>
+            <p style={{ fontSize: '1.4rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '50px' }}>
+              Nestaigā pa garlaicīgiem sarakstiem. Ienāc interaktīvā 3D vidē, apskati meistaru portfolio, apmeklē tiešraides seminārus un atrodi labākos sadarbības partnerus reāllaikā.
             </p>
-            <Link to="/expo" style={{ display: 'inline-block', padding: '18px 40px', background: '#10b981', color: '#fff', fontWeight: 800, textDecoration: 'none', borderRadius: '12px', fontSize: '1.1rem', boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.4)' }}>Atklāt Expo Halli</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ROLES SECTION */}
-      <section style={{ padding: '100px 24px', background: '#020617' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '60px', letterSpacing: '-2px' }}>Platforma ikvienam</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-            {[
-              { title: 'Meistari un Brigādes', desc: 'Iegūstiet savu stendu un rādiet portfolio tūkstošiem klientu.', icon: '🛠️' },
-              { title: 'Būvniecības Uzņēmumi', desc: 'Pārvaldiet tāmes, līgumus un piesaistiet jaunus projektus hallē.', icon: '🏗️' },
-              { title: 'Dizaineri un Arhitekti', desc: 'Rīkojiet izglītojošus seminārus un audzējiet savu auditoriju.', icon: '🎨' },
-              { title: 'Klienti un Interesenti', desc: 'Izmantojiet PRO rīkus, lai saprastu sava mājokļa patiesās izmaksas.', icon: '👀' },
-            ].map((role, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.02)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>{role.icon}</div>
-                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '15px' }}>{role.title}</h4>
-                <p style={{ fontSize: '0.95rem', color: '#64748b', lineHeight: 1.6 }}>{role.desc}</p>
-              </div>
-            ))}
+            <Link to="/expo" className="btn-pro btn-pro-primary" style={{ background: '#10b981', padding: '20px 45px' }}>Ienākt Izstādē</Link>
           </div>
         </div>
       </section>
 
       {/* FINAL CTA */}
-      <section style={{ padding: '120px 24px', textAlign: 'center', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}>
-        <h2 style={{ fontSize: '4rem', fontWeight: 950, letterSpacing: '-3px', lineHeight: 1, marginBottom: '30px' }}>Gatavs nākotnei?</h2>
-        <p style={{ fontSize: '1.4rem', marginBottom: '50px', opacity: 0.9, maxWidth: '700px', margin: '0 auto 50px' }}>Pievienojies lielākajai būvniecības ekosistēmai un sāc strādāt profesionāli.</p>
-        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-           <Link to="/login" style={{ padding: '20px 50px', background: '#000', color: '#fff', fontWeight: 800, textDecoration: 'none', borderRadius: '12px', fontSize: '1.2rem' }}>Reģistrēties tagad</Link>
-           <Link to="/kalkulators" style={{ padding: '20px 50px', background: '#fff', color: '#3b82f6', fontWeight: 800, textDecoration: 'none', borderRadius: '12px', fontSize: '1.2rem' }}>Sākt aprēķinu</Link>
+      <section style={{ padding: '160px 24px', textAlign: 'center', background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))' }}>
+        <h2 style={{ fontSize: '5rem', fontWeight: 950, letterSpacing: '-4px', lineHeight: 1, marginBottom: '40px' }}>Gatavs sākt projektu?</h2>
+        <p style={{ fontSize: '1.6rem', marginBottom: '60px', opacity: 0.9, maxWidth: '800px', margin: '0 auto 60px', fontWeight: 500 }}>Pievienojies tūkstošiem speciālistu un klientu lielākajā būvniecības ekosistēmā.</p>
+        <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
+           <Link to="/login" className="btn-pro" style={{ padding: '24px 60px', background: '#000', color: '#fff', fontSize: '1.3rem' }}>Reģistrēties tagad</Link>
+           <Link to="/kalkulators" className="btn-pro" style={{ padding: '24px 60px', background: '#fff', color: 'var(--accent-primary)', fontSize: '1.3rem' }}>Izveidot pirmo tāmi</Link>
         </div>
       </section>
     </div>

@@ -28,136 +28,120 @@ export default function Layout() {
   };
 
   const isExpo = location.pathname.startsWith('/expo');
-  const isDarkPage = isExpo || location.pathname === '/';
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      background: isDarkPage ? '#020617' : '#fff',
-      color: isDarkPage ? '#fff' : '#0f172a',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      transition: 'background 0.3s ease'
-    }}>
-      <header style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: isDarkPage ? 'rgba(2, 6, 23, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        padding: '12px 0'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem', color: '#fff', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' }}>P</div>
-            <span style={{ fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-1px', color: isDarkPage ? '#fff' : '#0f172a' }}>Platformu Centrs</span>
+    <div className="layout-root">
+      <header className="glass-nav">
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ 
+              width: '40px', height: '40px', 
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', 
+              borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              fontWeight: 'bold', fontSize: '1.2rem', color: '#fff', 
+              boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' 
+            }}>P</div>
+            <span style={{ fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-1px', color: 'var(--text-primary)' }}>Platformu Centrs</span>
           </Link>
           
           <nav style={{ display: 'flex', gap: '30px', alignItems: 'center', fontSize: '0.9rem', fontWeight: 600 }}>
-            <Link to="/expo" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>3D EXPO</Link>
-            <Link to="/kalkulators" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>PRO TĀMES</Link>
-            <Link to="/bizness30" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>BIZNESA SKOLA</Link>
-            <Link to="/orakuls" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>AI ORĀKULS</Link>
-            <Link to="/pricing" style={{ textDecoration: 'none', color: '#3b82f6', transition: 'color 0.2s' }}>CENAS</Link>
+            <Link to="/expo" className="nav-link">3D EXPO</Link>
+            <Link to="/kalkulators" className="nav-link">PRO TĀMES</Link>
+            <Link to="/bizness30" className="nav-link">BIZNESA SKOLA</Link>
+            <Link to="/orakuls" className="nav-link">AI ORĀKULS</Link>
             
-            <div style={{ width: '1px', height: '24px', background: isDarkPage ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}></div>
+            <div style={{ width: '1px', height: '20px', background: 'var(--border-glass)' }}></div>
             
             {session ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <Link to="/dashboard" style={{ textDecoration: 'none', color: '#3b82f6', fontWeight: 800 }}>KABINETS</Link>
-                <button onClick={handleLogout} style={{ background: 'transparent', border: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, color: isDarkPage ? '#fff' : '#0f172a', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>IZIET</button>
+                <Link to="/dashboard" style={{ textDecoration: 'none', color: 'var(--accent-primary)', fontWeight: 800 }}>KABINETS</Link>
+                <button onClick={handleLogout} className="btn-pro btn-pro-secondary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>IZIET</button>
               </div>
             ) : (
-              <Link to="/login" style={{ 
-                background: '#3b82f6', 
-                color: '#fff', 
-                textDecoration: 'none', 
-                padding: '10px 24px', 
-                borderRadius: '8px', 
-                boxShadow: '0 10px 20px -5px rgba(59, 130, 246, 0.4)',
-                transition: 'transform 0.2s'
-              }}>IENĀKT</Link>
+              <Link to="/login" className="btn-pro btn-pro-primary">IENĀKT</Link>
             )}
           </nav>
         </div>
       </header>
 
-      <div style={{ height: '64px' }}></div>
-
-      {location.pathname !== '/expo' && sessionStorage.getItem('expo_camera_pos') && (
-        <div style={{ position: 'fixed', bottom: '40px', left: '40px', zIndex: 999 }}>
-          <button 
-            onClick={() => navigate('/expo')}
-            style={{ 
-              background: 'rgba(15, 23, 42, 0.9)', 
-              color: '#fff', 
-              border: '2px solid #3b82f6', 
-              padding: '16px 32px', 
-              borderRadius: '50px', 
-              cursor: 'pointer', 
-              fontWeight: 800, 
-              boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-              backdropFilter: 'blur(10px)',
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '1px'
-            }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>←</span> Atpakaļ uz Izstādi
-          </button>
-        </div>
-      )}
-
-      <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* Main Content */}
+      <main style={{ flexGrow: 1, minHeight: 'calc(100vh - 73px)' }}>
         <Outlet />
       </main>
 
-      {location.pathname !== '/expo' && (
+      {/* Footer (Hidden on Expo pages) */}
+      {!isExpo && (
         <footer style={{ 
           padding: '80px 24px 40px', 
-          background: isDarkPage ? '#020617' : '#f8fafc', 
-          borderTop: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.05)' : '#e5e7eb'}`,
-          color: isDarkPage ? '#94a3b8' : '#64748b'
+          background: 'rgba(2, 6, 23, 0.5)', 
+          borderTop: '1px solid var(--border-glass)',
+          color: 'var(--text-secondary)'
         }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '60px' }}>
               <div>
-                <h4 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Platformu Centrs</h4>
-                <p style={{ fontSize: '0.9rem', lineHeight: 1.6 }}>Pasaulē pirmā 3D būvniecības ekosistēma. Tāmes, speciālisti un 3D izstādes vienuviet.</p>
+                <h4 style={{ color: '#fff', marginBottom: '20px' }}>Platformu Centrs</h4>
+                <p style={{ fontSize: '0.9rem' }}>Pasaulē pirmā 3D būvniecības ekosistēma. Tāmes, speciālisti un 3D izstādes vienuviet.</p>
               </div>
               <div>
-                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Resursi</h5>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Resursi</h5>
+                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
                   <li><Link to="/kalkulators" style={{ color: 'inherit', textDecoration: 'none' }}>PRO Kalkulatori</Link></li>
                   <li><Link to="/expo" style={{ color: 'inherit', textDecoration: 'none' }}>3D Metaverse Expo</Link></li>
                   <li><Link to="/bizness30" style={{ color: 'inherit', textDecoration: 'none' }}>30 Dienu Spēle</Link></li>
                 </ul>
               </div>
               <div>
-                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Juridiskā info</h5>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Juridiskā info</h5>
+                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
                   <li><Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Lietošanas noteikumi</Link></li>
                   <li><Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privātuma politika</Link></li>
                 </ul>
               </div>
               <div>
-                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Kontakti</h5>
+                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Kontakti</h5>
                 <p style={{ fontSize: '0.9rem' }}>support@platformucentrs.lv</p>
                 <p style={{ fontSize: '0.9rem' }}>+371 20000000</p>
               </div>
             </div>
-            <div style={{ textAlign: 'center', paddingTop: '40px', borderTop: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.05)' : '#e5e7eb'}`, fontSize: '0.8rem' }}>
+            <div style={{ textAlign: 'center', paddingTop: '40px', borderTop: '1px solid var(--border-glass)', fontSize: '0.8rem' }}>
               &copy; 2026 Platformu Centrs Metaverse. Built with 3D Precision.
             </div>
           </div>
         </footer>
       )}
+
+      {/* Floating Expo Button */}
+      {!isExpo && sessionStorage.getItem('expo_camera_pos') && (
+        <button 
+          onClick={() => navigate('/expo')}
+          className="glass-card"
+          style={{ 
+            position: 'fixed', bottom: '40px', left: '40px', zIndex: 999,
+            padding: '16px 32px', borderRadius: '50px', cursor: 'pointer',
+            color: '#fff', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px',
+            border: '2px solid var(--accent-primary)', textTransform: 'uppercase'
+          }}
+        >
+          <span>←</span> Atpakaļ uz Izstādi
+        </button>
+      )}
+
+      <style>{`
+        .nav-link {
+          text-decoration: none;
+          color: var(--text-secondary);
+          transition: color 0.2s;
+        }
+        .nav-link:hover {
+          color: var(--text-primary);
+        }
+        .layout-root {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+      `}</style>
     </div>
   );
 }

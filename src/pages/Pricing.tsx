@@ -4,24 +4,22 @@ import '../components/calculator/styles/CalculatorPro.css';
 
 const PLANS = [
   { 
-    id: 'free', name: 'BEZMAKSAS', price: '0', 
-    features: ['Standarta stends hallē', 'Pamata profils', '1 CTA poga (Telefons)', 'Tāmu kalkulatori'],
-    color: '#64748b', btnText: 'Pašreizējais plāns'
+    id: 'free', name: 'FREELANCER', price: '0', 
+    desc: 'Individuāliem meistariem darba uzsākšanai.',
+    features: ['Standarta stends hallē', 'Pamata profils', '1 Kontakta poga', 'Tāmu kalkulatori'],
+    color: 'var(--text-muted)', btnText: 'Pašreizējais plāns', popular: false
   },
   { 
-    id: 'start', name: 'START', price: '29', 
-    features: ['Viss no FREE', 'Portfolio (līdz 6 bildēm)', 'Lead pieteikumu forma', 'Prioritārs supports'],
-    color: '#3b82f6', btnText: 'Izvēlēties Start'
+    id: 'start', name: 'BUSINESS', price: '49', 
+    desc: 'Uzņēmumiem, kas vēlas piesaistīt reālus klientus.',
+    features: ['Viss no Freelancer', 'Portfolio (līdz 12 darbiem)', 'Lead pieteikumu CRM', 'Prioritārs supports'],
+    color: 'var(--accent-primary)', btnText: 'Izvēlēties Business', popular: true
   },
   { 
-    id: 'pro', name: 'PRO', price: '89', 
-    features: ['Viss no START', 'Top pozīcija (pie ieejas)', 'Dinamiskā ekrāna rotācija', 'Leads eksports uz Excel'],
-    color: '#8b5cf6', btnText: 'Kļūt par PRO', popular: true
-  },
-  { 
-    id: 'biz', name: 'BIZNESA', price: '249', 
-    features: ['Viss no PRO', 'Custom 3D stends', 'Semināru rīkošana', 'Video reklāma hallē'],
-    color: '#0f172a', btnText: 'Sazināties'
+    id: 'pro', name: 'ENTERPRISE', price: '199', 
+    desc: 'Lielajiem spēlētājiem un būvmateriālu brendiem.',
+    features: ['Viss no Business', 'Individuāls 3D stends', 'Semināru rīkošana', 'Video reklāma hallē'],
+    color: 'var(--accent-secondary)', btnText: 'Sazināties ar mums', popular: false
   }
 ];
 
@@ -37,67 +35,94 @@ export default function Pricing() {
     
     // Simulate Secure Stripe Checkout
     setTimeout(() => {
-      alert(`Pāreja uz drošu maksājumu vidi (Stripe/Bank)... 
+      alert(`Pāreja uz drošu maksājumu vidi (Stripe API)... 
 
 Plāns: ${planId.toUpperCase()}
-Summa: ${PLANS.find(p => p.id === planId)?.price} €/mēn`);
+Summa: ${PLANS.find(p => p.id === planId)?.price} EUR/mēn`);
       setIsSubmitting(false);
       navigate('/dashboard');
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="calculator-pro-wrapper" style={{ paddingBottom: '100px' }}>
-      <div className="calc-header">
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 900 }}>Izvēlies savu jaudu</h1>
-        <p style={{ fontSize: '1.2rem', color: '#64748b' }}>Visiem stendiem hallē ir jāmaksā par elektrību un telpu, bet tu izvēlies, cik skaļi gribi izskatīties.</p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '50px' }}>
-        {PLANS.map(plan => (
-          <div key={plan.id} style={{ 
-            background: '#fff', borderRadius: '24px', padding: '40px', border: plan.popular ? `3px solid ${plan.color}` : '1px solid #e2e8f0',
-            position: 'relative', display: 'flex', flexDirection: 'column', boxShadow: plan.popular ? '0 20px 40px rgba(0,0,0,0.1)' : 'none'
-          }}>
-            {plan.popular && (
-              <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: plan.color, color: '#fff', padding: '5px 20px', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 'bold' }}>POPULĀRĀKAIS</div>
-            )}
-            
-            <h3 style={{ fontSize: '1rem', color: plan.color, fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px' }}>{plan.name}</h3>
-            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '30px' }}>
-              <span style={{ fontSize: '3rem', fontWeight: 900 }}>{plan.price}€</span>
-              <span style={{ color: '#94a3b8', marginLeft: '5px' }}>/mēn.</span>
-            </div>
-
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', flexGrow: 1 }}>
-              {plan.features.map((f, i) => (
-                <li key={i} style={{ marginBottom: '12px', fontSize: '0.95rem', display: 'flex', gap: '10px', color: '#475569' }}>
-                  <span style={{ color: '#10b981' }}>✓</span> {f}
-                </li>
-              ))}
-            </ul>
-
-            <button 
-              onClick={() => handleCheckout(plan.id)}
-              disabled={isProcessing}
-              style={{ 
-                width: '100%', padding: '15px', borderRadius: '12px', border: 'none', fontWeight: 'bold', 
-                background: plan.popular ? plan.color : '#f1f5f9',
-                color: plan.popular ? '#fff' : '#475569',
-                cursor: plan.id === 'free' ? 'default' : 'pointer'
-              }}
-            >
-              {isProcessing && selectedPlan === plan.id ? 'Apstrādā...' : plan.btnText}
-            </button>
+    <div style={{ background: 'var(--bg-main)', minHeight: '100vh', padding: '100px 24px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        
+        {/* HEADER */}
+        <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+          <div className="glass-card" style={{ display: 'inline-flex', padding: '8px 20px', borderRadius: '50px', marginBottom: '25px', borderColor: 'var(--accent-primary)' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-primary)', letterSpacing: '2px' }}>SCALE YOUR BUSINESS</span>
           </div>
-        ))}
-      </div>
+          <h1 style={{ fontSize: '4.5rem', fontWeight: 950, letterSpacing: '-4px', lineHeight: 1, marginBottom: '25px' }}>
+            Izvēlies savu <span style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>jaudu hallē</span>
+          </h1>
+          <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', maxWidth: '750px', margin: '0 auto' }}>
+            Pievienojies nākotnes būvniecības ekosistēmai un sāc pārdot Metaversā profesionāli.
+          </p>
+        </div>
 
-      {/* Security Badges */}
-      <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center', gap: '40px', opacity: 0.5 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>🔐 SSL Secure Payment</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>💳 Stripe Integrated</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>🇪🇺 GDPR Compliant</div>
+        {/* PLANS GRID */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px' }}>
+          {PLANS.map(plan => (
+            <div key={plan.id} className="glass-card animate-fade-in" style={{ 
+              padding: '50px', 
+              borderColor: plan.popular ? 'var(--accent-primary)' : 'var(--border-glass)',
+              background: plan.popular ? 'rgba(30, 41, 59, 0.9)' : 'var(--bg-card)',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'transform 0.3s ease',
+              boxShadow: plan.popular ? '0 30px 60px rgba(0,0,0,0.4)' : 'var(--shadow-pro)'
+            }}>
+              {plan.popular && (
+                <div style={{ 
+                  position: 'absolute', top: '20px', right: '20px', 
+                  background: 'var(--accent-primary)', color: '#fff', 
+                  padding: '5px 15px', borderRadius: '50px', 
+                  fontSize: '0.7rem', fontWeight: 900, letterSpacing: '1px' 
+                }}>IETEICAMAIS</div>
+              )}
+              
+              <h3 style={{ fontSize: '1rem', color: plan.color, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '15px' }}>{plan.name}</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '30px', minHeight: '50px' }}>{plan.desc}</p>
+              
+              <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '40px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '30px' }}>
+                <span style={{ fontSize: '4rem', fontWeight: 950, color: '#fff', letterSpacing: '-3px' }}>{plan.price}€</span>
+                <span style={{ color: 'var(--text-muted)', marginLeft: '10px', fontSize: '1.1rem', fontWeight: 600 }}>/ mēnesī</span>
+              </div>
+
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 50px 0', flexGrow: 1 }}>
+                {plan.features.map((f, i) => (
+                  <li key={i} style={{ marginBottom: '18px', fontSize: '1.05rem', display: 'flex', gap: '15px', color: '#fff', alignItems: 'center' }}>
+                    <span style={{ color: plan.popular ? 'var(--accent-primary)' : '#10b981', fontSize: '1.2rem' }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button 
+                onClick={() => handleCheckout(plan.id)}
+                disabled={isProcessing}
+                className={`btn-pro ${plan.popular ? 'btn-pro-primary' : 'btn-pro-secondary'}`}
+                style={{ width: '100%', padding: '20px', fontSize: '1.1rem' }}
+              >
+                {isProcessing && selectedPlan === plan.id ? 'SINHRONIZĒ...' : plan.btnText}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* TRUST BADGES */}
+        <div className="glass-card" style={{ marginTop: '80px', padding: '30px', display: 'flex', justifyContent: 'center', gap: '60px', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '1.2rem' }}>🔐</span> SSL SECURE STRIPE
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '1.2rem' }}>🌍</span> GLOBAL ENTERPRISE READY
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '1.2rem' }}>🇪🇺</span> GDPR DATA COMPLIANCE
+          </div>
+        </div>
       </div>
     </div>
   );

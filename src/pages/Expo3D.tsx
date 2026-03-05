@@ -28,12 +28,20 @@ function DataHUD({ isLocked }: { isLocked: boolean }) {
   useEffect(() => { const interval = setInterval(() => { setStats(s => ({ ...s, visitors: 1200 + Math.floor(Math.random() * 50) })); }, 3000); return () => clearInterval(interval); }, []);
 
   return (
-    <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100, color: '#000', fontFamily: 'monospace', pointerEvents: 'none', background: 'rgba(255,255,255,0.8)', padding: '15px', border: '1px solid #000' }}>
-      <div style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '5px' }}>SYSTEM STATUS: ONLINE</div>
-      <div>CONCURRENT_USERS: {stats.visitors}</div>
-      <div>NETWORK_LATENCY: {stats.latency}</div>
-      <div style={{ marginTop: '10px', fontSize: '0.8rem', color: isLocked ? '#10b981' : '#ef4444' }}>{isLocked ? '>>> CONTROL_LINK_STABLE' : '>>> WAITING_FOR_INPUT...'}</div>
-      {!isTouchDevice && !isLocked && <div style={{ marginTop: '10px', background: '#000', color: '#fff', padding: '5px' }}>CLICK TO SYNC</div>}
+    <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 100, pointerEvents: 'none' }}>
+      <div className="glass-card" style={{ padding: '20px 30px', borderColor: 'var(--accent-primary)', background: 'rgba(15, 23, 42, 0.8)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
+          <span style={{ width: '10px', height: '10px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981' }}></span>
+          <div style={{ fontSize: '1.1rem', fontWeight: 900, letterSpacing: '1px', color: '#fff' }}>SYSTEM ONLINE</div>
+        </div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div>CONCURRENT_USERS: <span style={{ color: '#fff' }}>{stats.visitors}</span></div>
+          <div>NETWORK_LATENCY: <span style={{ color: '#fff' }}>{stats.latency}</span></div>
+          <div style={{ marginTop: '10px', fontSize: '0.75rem', fontWeight: 800, color: isLocked ? '#3b82f6' : '#ef4444' }}>
+            {isLocked ? '>>> LINK_STABLE' : '>>> WAITING_FOR_SYNC...'}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -42,7 +50,15 @@ function AudioToggle() {
   const [on, setOn] = useState(false); const audio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => { audio.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'); audio.current.loop = true; audio.current.volume = 0.05; return () => { if (audio.current) audio.current.pause(); }; }, []);
   const toggle = () => { if (!audio.current) return; if (on) audio.current.pause(); else audio.current.play(); setOn(!on); };
-  return <button onClick={toggle} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 100, background: 'rgba(255,255,255,0.9)', border: '1px solid #000', padding: '10px 20px', fontWeight: 900, cursor: 'pointer' }}>{on ? 'AUDIO ON' : 'AUDIO OFF'}</button>;
+  return (
+    <button onClick={toggle} className="glass-card" style={{ 
+      position: 'absolute', top: '24px', right: '24px', zIndex: 100, 
+      padding: '12px 24px', fontWeight: 900, cursor: 'pointer', color: '#fff',
+      fontSize: '0.8rem', letterSpacing: '1px'
+    }}>
+      {on ? '🔊 AUDIO ON' : '🔈 AUDIO OFF'}
+    </button>
+  );
 }
 
 interface StaticTextLabelProps {
@@ -265,15 +281,15 @@ export default function Expo3D() {
   }, [dB]);
 
   return (
-    <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative', background: '#fff', touchAction: 'none' }}>
+    <div style={{ width: '100vw', height: 'calc(100vh - 64px)', position: 'relative', background: 'var(--bg-main)', touchAction: 'none' }}>
       <AudioToggle /> <DataHUD isLocked={isL || mM} />
       {!isL && !mM && (
-        <div style={{ position: 'absolute', inset: 0, background: '#fff', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '6rem', fontWeight: 900, letterSpacing: '-4px' }}>EXPO CORE</h1>
-          <button onClick={() => { if (isTouchDevice) setMM(true); else { try { cRef.current?.lock(); } catch { /* ignore */ } } setIsL(true); sessionStorage.setItem('expo_initialized', 'true'); }} style={{ padding: '30px 120px', fontSize: '1.5rem', background: '#000', color: '#fff', border: 'none', fontWeight: 900 }}>INITIALIZE</button>
+        <div style={{ position: 'absolute', inset: 0, background: 'var(--bg-main)', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <h1 style={{ fontSize: '8rem', fontWeight: 950, letterSpacing: '-8px', marginBottom: '40px', background: 'linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>EXPO CORE</h1>
+          <button onClick={() => { if (isTouchDevice) setMM(true); else { try { cRef.current?.lock(); } catch { /* ignore */ } } setIsL(true); sessionStorage.setItem('expo_initialized', 'true'); }} className="btn-pro btn-pro-primary" style={{ padding: '30px 120px', fontSize: '1.5rem' }}>INITIALIZE LINK</button>
         </div>
       )}
-      {mM && <div style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 50 }}><Joystick size={100} sticky baseColor="rgba(0,0,0,0.05)" stickColor="rgba(0,0,0,0.8)" move={(e: any)=>{joystickState.x=e.x || 0;joystickState.y=e.y || 0;}} stop={()=>{joystickState.x=0;joystickState.y=0;}} /></div>}
+      {mM && <div style={{ position: 'absolute', bottom: '40px', left: '40px', zIndex: 50 }}><Joystick size={100} sticky baseColor="rgba(255,255,255,0.05)" stickColor="var(--accent-primary)" move={(e: any)=>{joystickState.x=e.x || 0;joystickState.y=e.y || 0;}} stop={()=>{joystickState.x=0;joystickState.y=0;}} /></div>}
       <Canvas shadows={{ type: THREE.PCFShadowMap }} camera={{ fov: 50, far: 2500, near: 0.1 }} gl={{ antialias: false, powerPreference: "high-performance" }} dpr={[1, 1.2]}>
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
@@ -284,7 +300,7 @@ export default function Expo3D() {
             <Environment preset="warehouse" />
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
               <planeGeometry args={[1000, 2000]} />
-              <meshPhysicalMaterial color="#111" roughness={0.8} metalness={0.2} />
+              <meshPhysicalMaterial color="#020617" roughness={0.8} metalness={0.2} />
             </mesh>
             {bBooths}
             <SidebarSeminarTheatre position={[0, 0, -800]} />
@@ -296,7 +312,9 @@ export default function Expo3D() {
           </Bvh>
         </Suspense>
       </Canvas>
-      <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', color: '#94a3b8', fontSize: '0.8rem', pointerEvents: 'none', background: 'rgba(0,0,0,0.5)', padding: '5px 15px', borderRadius: '20px' }}>{isTouchDevice ? 'IZMANTO VIRZIENSTRUCU, LAI PĀRVIETOTOS' : 'WASD + PELE, LAI PĀRVIETOTOS'}</div>
+      <div className="glass-card" style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', color: 'var(--text-secondary)', fontSize: '0.75rem', pointerEvents: 'none', padding: '10px 30px', borderRadius: '50px', fontWeight: 800, letterSpacing: '1px', border: '1px solid var(--border-glass)' }}>
+        {isTouchDevice ? 'IZMANTO VIRZIENSTRUCU, LAI PĀRVIETOTOS' : 'WASD + PELE, LAI PĀRVIETOTOS'}
+      </div>
     </div>
   );
 }
