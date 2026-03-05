@@ -36,8 +36,8 @@ export default function AutoserviceCalc() {
     }
   });
 
-  let oneMin = keys.type === 'basic' ? 35 : keys.type === 'remote' ? 95 : 180;
-  let oneMax = keys.type === 'basic' ? 90 : keys.type === 'remote' ? 220 : 420;
+  const oneMin = keys.type === 'basic' ? 35 : keys.type === 'remote' ? 95 : 180;
+  const oneMax = keys.type === 'basic' ? 90 : keys.type === 'remote' ? 220 : 420;
   let keyMin = oneMin * keys.count;
   let keyMax = oneMax * keys.count;
   if (keys.allLost && keys.count > 0) {

@@ -11,7 +11,7 @@ export async function fetchSections(): Promise<Section[]> {
       
     if (error) throw error;
     return data || [];
-  } catch (error) {
+  } catch {
     console.warn("Supabase fetch failed (maybe keys are missing or table is empty). Falling back to Mock data.");
     return [];
   }
@@ -31,7 +31,7 @@ export async function fetchCatalogItems(sectionId: string) {
       
     if (error) throw error;
     return data || [];
-  } catch (error) {
+  } catch {
     console.warn("Could not fetch items from Supabase.");
     return [];
   }
@@ -41,7 +41,7 @@ export async function saveEstimateDraft(
   lines: EstimateLine[], 
   clientName: string, 
   projectName: string, 
-  geometry: any,
+  geometry: Record<string, unknown>,
   userId: string
 ) {
   try {
@@ -85,8 +85,8 @@ export async function saveEstimateDraft(
     }
 
     return { success: true, estimateId: estData?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Save Draft Error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }

@@ -19,6 +19,7 @@ import LogisticsCalc from './pages/LogisticsCalc';
 import WindowsCalc from './pages/WindowsCalc';
 import QuickFixCalc from './pages/QuickFixCalc';
 import BusinessGame from './pages/BusinessGame';
+import FutureOracle from './pages/FutureOracle';
 import Pricing from './pages/Pricing';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="logi" element={<WindowsCalc />} />
           <Route path="uzfrisinasana" element={<QuickFixCalc />} />
           <Route path="bizness30" element={<BusinessGame />} />
+          <Route path="orakuls" element={<FutureOracle />} />
           <Route path="avarija" element={<SosEmergency />} />
           <Route path="expo" element={<Expo3D />} />
           <Route path="expo/stends/:id" element={<BoothRoom />} />

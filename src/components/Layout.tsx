@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
 export default function Layout() {
   const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -26,47 +27,89 @@ export default function Layout() {
     navigate('/');
   };
 
-  const isInExpo = window.location.pathname === '/expo';
+  const isExpo = location.pathname.startsWith('/expo');
+  const isDarkPage = isExpo || location.pathname === '/';
 
   return (
-    <div className="layout">
-      <header className="site-header">
-        <div className="container site-header-main" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link to="/" className="logo brand-lockup" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '32px', height: '32px', background: '#3b82f6', borderRadius: '4px' }}></div>
-            <span className="logo-wordmark" style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Platformu Centrs</span>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      background: isDarkPage ? '#020617' : '#fff',
+      color: isDarkPage ? '#fff' : '#0f172a',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      transition: 'background 0.3s ease'
+    }}>
+      <header style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        background: isDarkPage ? 'rgba(2, 6, 23, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        padding: '12px 0'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem', color: '#fff', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' }}>P</div>
+            <span style={{ fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-1px', color: isDarkPage ? '#fff' : '#0f172a' }}>Platformu Centrs</span>
           </Link>
-          <nav className="nav nav-primary" style={{ display: 'flex', gap: '15px', alignItems: 'center', fontSize: '0.95rem' }}>
-            <Link to="/expo" style={{ textDecoration: 'none', color: '#333', fontWeight: 'bold' }}>3D Expo</Link>
-            <Link to="/kalkulators" style={{ textDecoration: 'none', color: '#333' }}>Pro Tāmes</Link>
-            <Link to="/pricing" style={{ textDecoration: 'none', color: '#3b82f6', fontWeight: 'bold' }}>Cenas</Link>
-            <Link to="/bizness30" style={{ textDecoration: 'none', color: '#333' }}>30 Dienu Spēle</Link>
+          
+          <nav style={{ display: 'flex', gap: '30px', alignItems: 'center', fontSize: '0.9rem', fontWeight: 600 }}>
+            <Link to="/expo" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>3D EXPO</Link>
+            <Link to="/kalkulators" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>PRO TĀMES</Link>
+            <Link to="/bizness30" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>BIZNESA SKOLA</Link>
+            <Link to="/orakuls" style={{ textDecoration: 'none', color: isDarkPage ? '#fff' : '#475569', transition: 'color 0.2s' }}>AI ORĀKULS</Link>
+            <Link to="/pricing" style={{ textDecoration: 'none', color: '#3b82f6', transition: 'color 0.2s' }}>CENAS</Link>
             
-            <div style={{ width: '1px', height: '24px', background: '#e5e7eb', margin: '0 5px' }}></div>
+            <div style={{ width: '1px', height: '24px', background: isDarkPage ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}></div>
             
             {session ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <Link to="/dashboard" style={{ textDecoration: 'none', fontWeight: 'bold', color: '#3b82f6' }}>Kabinets</Link>
-                <button onClick={handleLogout} className="btn btn-soft" style={{ padding: '4px 10px', fontSize: '0.85rem' }}>Iziet</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <Link to="/dashboard" style={{ textDecoration: 'none', color: '#3b82f6', fontWeight: 800 }}>KABINETS</Link>
+                <button onClick={handleLogout} style={{ background: 'transparent', border: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, color: isDarkPage ? '#fff' : '#0f172a', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}>IZIET</button>
               </div>
             ) : (
-              <Link to="/login" className="btn" style={{ padding: '6px 15px', fontSize: '0.9rem' }}>Ielogoties</Link>
+              <Link to="/login" style={{ 
+                background: '#3b82f6', 
+                color: '#fff', 
+                textDecoration: 'none', 
+                padding: '10px 24px', 
+                borderRadius: '8px', 
+                boxShadow: '0 10px 20px -5px rgba(59, 130, 246, 0.4)',
+                transition: 'transform 0.2s'
+              }}>IENĀKT</Link>
             )}
           </nav>
         </div>
       </header>
 
-      {!isInExpo && sessionStorage.getItem('expo_camera_pos') && (
-        <div style={{ position: 'fixed', bottom: '30px', left: '30px', zIndex: 9999 }}>
+      <div style={{ height: '64px' }}></div>
+
+      {location.pathname !== '/expo' && sessionStorage.getItem('expo_camera_pos') && (
+        <div style={{ position: 'fixed', bottom: '40px', left: '40px', zIndex: 999 }}>
           <button 
             onClick={() => navigate('/expo')}
             style={{ 
-              background: '#0f172a', color: '#fff', border: '2px solid #3b82f6', padding: '15px 25px', 
-              borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-              display: 'flex', alignItems: 'center', gap: '10px'
+              background: 'rgba(15, 23, 42, 0.9)', 
+              color: '#fff', 
+              border: '2px solid #3b82f6', 
+              padding: '16px 32px', 
+              borderRadius: '50px', 
+              cursor: 'pointer', 
+              fontWeight: 800, 
+              boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
           >
-            ← Atpakaļ uz Izstādi
+            <span style={{ fontSize: '1.2rem' }}>←</span> Atpakaļ uz Izstādi
           </button>
         </div>
       )}
@@ -75,16 +118,46 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="site-footer" style={{ padding: '40px 20px', background: '#f8fafc', borderTop: '1px solid #e5e7eb' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>&copy; 2026 Platformu Centrs. Visas tiesības aizsargātas.</p>
-          <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem' }}>
-            <Link to="/terms" style={{ color: '#64748b', textDecoration: 'none' }}>Lietošanas noteikumi</Link>
-            <Link to="/privacy" style={{ color: '#64748b', textDecoration: 'none' }}>Privātuma politika</Link>
-            <span style={{ color: '#64748b' }}>support@platformucentrs.lv</span>
+      {location.pathname !== '/expo' && (
+        <footer style={{ 
+          padding: '80px 24px 40px', 
+          background: isDarkPage ? '#020617' : '#f8fafc', 
+          borderTop: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.05)' : '#e5e7eb'}`,
+          color: isDarkPage ? '#94a3b8' : '#64748b'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '60px' }}>
+              <div>
+                <h4 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Platformu Centrs</h4>
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.6 }}>Pasaulē pirmā 3D būvniecības ekosistēma. Tāmes, speciālisti un 3D izstādes vienuviet.</p>
+              </div>
+              <div>
+                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Resursi</h5>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <li><Link to="/kalkulators" style={{ color: 'inherit', textDecoration: 'none' }}>PRO Kalkulatori</Link></li>
+                  <li><Link to="/expo" style={{ color: 'inherit', textDecoration: 'none' }}>3D Metaverse Expo</Link></li>
+                  <li><Link to="/bizness30" style={{ color: 'inherit', textDecoration: 'none' }}>30 Dienu Spēle</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Juridiskā info</h5>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <li><Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Lietošanas noteikumi</Link></li>
+                  <li><Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privātuma politika</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h5 style={{ color: isDarkPage ? '#fff' : '#0f172a', marginBottom: '20px', fontWeight: 800 }}>Kontakti</h5>
+                <p style={{ fontSize: '0.9rem' }}>support@platformucentrs.lv</p>
+                <p style={{ fontSize: '0.9rem' }}>+371 20000000</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', paddingTop: '40px', borderTop: `1px solid ${isDarkPage ? 'rgba(255,255,255,0.05)' : '#e5e7eb'}`, fontSize: '0.8rem' }}>
+              &copy; 2026 Platformu Centrs Metaverse. Built with 3D Precision.
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }

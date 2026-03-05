@@ -1,9 +1,94 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, Plane, Text, Html } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+
+// --- Industry Specific Decorations ---
+function ConstructionInteriors() {
+  return (
+    <group>
+      {/* Structural beams and tools */}
+      <mesh position={[-4, 0.5, -2]} castShadow>
+        <boxGeometry args={[0.5, 1, 0.5]} />
+        <meshPhysicalMaterial color="#334155" metalness={1} roughness={0.2} />
+      </mesh>
+      <mesh position={[-4, 1.2, -2]}>
+        <cylinderGeometry args={[0.3, 0.3, 0.1]} />
+        <meshPhysicalMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.5} />
+      </mesh>
+      {/* Scaffolding-like elements */}
+      {[[-6, -4], [6, -4]].map((p, i) => (
+        <group key={i} position={[p[0], 0, p[1]]}>
+          <mesh position={[0, 3, 0]} castShadow><boxGeometry args={[0.2, 6, 0.2]} /><meshPhysicalMaterial color="#475569" metalness={1} /></mesh>
+          <mesh position={[0, 5, 2]} rotation={[Math.PI/2, 0, 0]} castShadow><boxGeometry args={[0.2, 4, 0.2]} /><meshPhysicalMaterial color="#475569" metalness={1} /></mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function TechInteriors({ color }: { color: string }) {
+  return (
+    <group>
+      {/* Floating data nodes */}
+      {[[-3, 3, -2], [3, 4, -3], [0, 5, -4]].map((p, i) => (
+        <group key={i} position={p as [number, number, number]}>
+          <mesh castShadow>
+            <octahedronGeometry args={[0.3]} />
+            <meshPhysicalMaterial color={color} emissive={color} emissiveIntensity={2} transparent opacity={0.8} />
+          </mesh>
+          <pointLight color={color} intensity={1} distance={5} />
+        </group>
+      ))}
+      {/* Glowing floor patterns */}
+      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI/2, 0, 0]}>
+        <planeGeometry args={[10, 10]} />
+        <meshBasicMaterial color={color} transparent opacity={0.05} />
+      </mesh>
+    </group>
+  );
+}
+
+function SOSInteriors({ color }: { color: string }) {
+  return (
+    <group>
+      {/* Emergency equipment / Bold frames */}
+      <mesh position={[-5, 1, -2]} castShadow>
+        <boxGeometry args={[1, 2, 1]} />
+        <meshPhysicalMaterial color="#ef4444" metalness={0.5} roughness={0.1} />
+      </mesh>
+      {/* Pulsing beacons */}
+      <group position={[0, 5.5, -4.5]}>
+        <mesh>
+          <cylinderGeometry args={[2, 2, 0.5]} />
+          <meshPhysicalMaterial color="#111" />
+        </mesh>
+        <pointLight color={color} intensity={5} distance={15} />
+      </group>
+    </group>
+  );
+}
+
+function DesignInteriors() {
+  return (
+    <group>
+      {/* Elegant minimalist sculptures */}
+      <mesh position={[4, 1.5, -2]} castShadow>
+        <torusGeometry args={[0.8, 0.05, 16, 100]} />
+        <meshPhysicalMaterial color="#fff" metalness={1} roughness={0} clearcoat={1} />
+      </mesh>
+      {/* Soft spotlighting */}
+      <spotLight position={[4, 5, -2]} angle={0.3} penumbra={1} intensity={5} color="#fff" castShadow />
+      {/* Floating white panels */}
+      <mesh position={[0, 5, -4.8]}>
+        <planeGeometry args={[12, 4]} />
+        <meshPhysicalMaterial color="#fff" transparent opacity={0.1} transmission={0.8} thickness={0.5} />
+      </mesh>
+    </group>
+  );
+}
 
 export default function BoothRoom() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +101,40 @@ export default function BoothRoom() {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadData, setLeadData] = useState({ name: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pro Autopilot State
+  const [showAutopilot, setShowAutopilot] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role: 'ai' | 'user', text: string}[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Magnetize effect
+  useEffect(() => {
+    if (booth && !showAutopilot) {
+      const timer = setTimeout(() => {
+        setShowAutopilot(true);
+        setChatMessages([
+          { role: 'ai', text: `⚡ PRO AUTOPILOTS AKTIVIZĒTS: Sveiki! Esmu ${booth.title} mākslīgais intelekts. Izanalizējot mūsu meistaru pieredzi un jūsu interesi, esmu gatavs palīdzēt. Kā varu palīdzēt atrast labāko risinājumu jūsu projektam?` }
+        ]);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [booth]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    setChatMessages(prev => [...prev, { role: 'user', text: chatInput }]);
+    setChatInput('');
+    
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { role: 'ai', text: `Lielisks jautājums! Mūsu meistari izanalizēs šo. Vai vēlaties, lai sagatavoju ātru tāmi vai uzreiz atveru pieteikuma formu, lai varam sākt sadarbību?` }]);
+    }, 1200);
+  };
 
   useEffect(() => {
     const fetchBoothData = async () => {
@@ -170,6 +289,12 @@ export default function BoothRoom() {
           <meshStandardMaterial color="#0a0a0a" roughness={0.1} metalness={0.9} />
         </Plane>
 
+        {/* Industry Specific Interiors */}
+        {booth.category === 'building' || booth.category === 'industrial' ? <ConstructionInteriors /> : null}
+        {booth.category === 'tech' || booth.category === 'digital' ? <TechInteriors color={color} /> : null}
+        {booth.category === 'emergency' ? <SOSInteriors color={color} /> : null}
+        {booth.category === 'design' || booth.category === 'luxury' ? <DesignInteriors /> : null}
+
         {/* Back Advertising Wall */}
         <mesh position={[0, 2.5, -5]} receiveShadow castShadow>
           <boxGeometry args={[14, 6, 0.5]} />
@@ -236,6 +361,55 @@ export default function BoothRoom() {
       <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', color: '#475569', fontSize: '0.8rem', pointerEvents: 'none', background: 'rgba(0,0,0,0.5)', padding: '5px 15px', borderRadius: '20px' }}>
         IZMANTOJIET PELI, LAI GROZĪTU TELPU
       </div>
+
+      {/* Pro Autopilot Chat Widget */}
+      {showAutopilot && (
+        <div style={{
+          position: 'absolute', bottom: '20px', right: '20px', zIndex: 20,
+          background: 'rgba(15, 23, 42, 0.95)', border: `2px solid ${color}`,
+          borderRadius: '16px', width: '350px', display: 'flex', flexDirection: 'column',
+          boxShadow: `0 0 30px ${color}66`, backdropFilter: 'blur(10px)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ background: color, padding: '10px 15px', color: '#000', fontWeight: '900', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>⚡ PRO AUTOPILOT AI</span>
+            <button onClick={() => setShowAutopilot(false)} style={{ background: 'transparent', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>✕</button>
+          </div>
+          
+          <div style={{ padding: '15px', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} style={{
+                alignSelf: msg.role === 'ai' ? 'flex-start' : 'flex-end',
+                background: msg.role === 'ai' ? 'rgba(255,255,255,0.1)' : color,
+                color: msg.role === 'ai' ? '#fff' : '#000',
+                padding: '10px 15px',
+                borderRadius: '12px',
+                borderBottomLeftRadius: msg.role === 'ai' ? '2px' : '12px',
+                borderBottomRightRadius: msg.role === 'user' ? '2px' : '12px',
+                maxWidth: '85%',
+                fontSize: '0.9rem',
+                lineHeight: '1.4'
+              }}>
+                {msg.text}
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          <form onSubmit={handleChatSubmit} style={{ display: 'flex', padding: '10px', borderTop: '1px solid #334155', background: '#0f172a' }}>
+            <input 
+              type="text" 
+              value={chatInput} 
+              onChange={(e) => setChatInput(e.target.value)} 
+              placeholder="Jūsu jautājums..." 
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#1e293b', color: '#fff', outline: 'none' }}
+            />
+            <button type="submit" style={{ background: color, color: '#000', border: 'none', padding: '0 15px', marginLeft: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+              Sūtīt
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

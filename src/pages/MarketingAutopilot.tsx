@@ -6,6 +6,12 @@ export default function MarketingAutopilot() {
   const [autopilots, setAutopilots] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchAutopilotStatus = async () => {
+    const { data } = await supabase.from('marketing_autopilot').select('*');
+    if (data) setAutopilots(data);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     fetchAutopilotStatus();
     const subscription = supabase
@@ -17,12 +23,6 @@ export default function MarketingAutopilot() {
 
     return () => { supabase.removeChannel(subscription); };
   }, []);
-
-  const fetchAutopilotStatus = async () => {
-    const { data } = await supabase.from('marketing_autopilot').select('*');
-    if (data) setAutopilots(data);
-    setIsLoading(false);
-  };
 
   const toggleAutopilot = async (id: string, currentState: boolean) => {
     const { error } = await supabase

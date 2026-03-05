@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useMemo } from 'react';
 import type { EstimateLine, Section } from '../../lib/calculator-types';
 
 interface PdfDocumentProps {
@@ -16,6 +16,9 @@ interface PdfDocumentProps {
 }
 
 const PdfDocument = forwardRef<HTMLDivElement, PdfDocumentProps>(({ lines, sections, totals, clientName, projectName }, ref) => {
+  // Ģenerējam tāmes numuru tikai vienreiz pie komponentes izveides
+  const docNumber = useMemo(() => Math.floor(Math.random() * 10000), []);
+
   // Grupējam rindas pa sadaļām drukāšanai
   const linesBySection: Record<string, EstimateLine[]> = {};
   lines.forEach(line => {
@@ -58,7 +61,7 @@ const PdfDocument = forwardRef<HTMLDivElement, PdfDocumentProps>(({ lines, secti
             <strong>Objekts:</strong> {projectName || 'Standarta aprēķins'}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <strong>Tāmes Nr:</strong> EST-{Math.floor(Math.random() * 10000)}
+            <strong>Tāmes Nr:</strong> EST-{docNumber}
           </div>
         </div>
 

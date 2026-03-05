@@ -8,6 +8,7 @@ import { registerSW } from 'virtual:pwa-register';
 
 // Polify Buffer for the browser (needed by some PDF and crypto libraries)
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).Buffer = (window as any).Buffer || Buffer;
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import '../components/calculator/styles/CalculatorPro.css';
 
 const DAYS = [
@@ -35,13 +35,11 @@ const DAYS = [
 ];
 
 export default function BusinessGame() {
-  const [completedDays, setCompletedDays] = useState<number[]>([]);
-  const [activeDay, setActiveDay] = useState(1);
-
-  useEffect(() => {
+  const [completedDays, setCompletedDays] = useState<number[]>(() => {
     const saved = localStorage.getItem('biz_game_progress');
-    if (saved) setCompletedDays(JSON.parse(saved));
-  }, []);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [activeDay, setActiveDay] = useState(1);
 
   const toggleDay = (day: number) => {
     const newCompleted = completedDays.includes(day) 
