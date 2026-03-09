@@ -1,147 +1,75 @@
-import { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import type { Session } from '@supabase/supabase-js';
+import React from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 
-export default function Layout() {
-  const [session, setSession] = useState<Session | null>(null);
-  const navigate = useNavigate();
+const navItems = [
+  { path: '/dashboard', label: 'DASHBOARD', icon: '📊' },
+  { path: '/projects', label: 'PROJECTS', icon: '📁' },
+  { path: '/clients', label: 'CLIENTS', icon: '👥' },
+  { path: '/calculators', label: 'CALCULATORS', icon: '🧮' },
+  { path: '/generator', label: 'AI TOOLS', icon: '🧠' },
+  { path: '/documents', label: 'DOCUMENTS', icon: '📄' },
+  { path: '/finances', label: 'FINANCE', icon: '💰' },
+  { path: '/settings', label: 'SETTINGS', icon: '⚙️' }
+];
+
+const Layout: React.FC = () => {
   const location = useLocation();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/');
-  };
-
-  const isExpo = location.pathname.startsWith('/expo');
-
   return (
-    <div className="layout-root">
-      <header className="glass-nav">
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ 
-              width: '40px', height: '40px', 
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', 
-              borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontWeight: 'bold', fontSize: '1.2rem', color: '#fff', 
-              boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' 
-            }}>P</div>
-            <span style={{ fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-1px', color: 'var(--text-primary)' }}>Platformu Centrs</span>
-          </Link>
-          
-          <nav style={{ display: 'flex', gap: '30px', alignItems: 'center', fontSize: '0.9rem', fontWeight: 600 }}>
-            <Link to="/expo" className="nav-link">3D EXPO</Link>
-            <Link to="/kalkulators" className="nav-link">PRO TĀMES</Link>
-            <Link to="/bizness30" className="nav-link">BIZNESA SKOLA</Link>
-            <Link to="/orakuls" className="nav-link">AI ORĀKULS</Link>
-            
-            <div style={{ width: '1px', height: '20px', background: 'var(--border-glass)' }}></div>
-            
-            {session ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <Link to="/dashboard" style={{ textDecoration: 'none', color: 'var(--accent-primary)', fontWeight: 800 }}>KABINETS</Link>
-                <button onClick={handleLogout} className="btn-pro btn-pro-secondary" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>IZIET</button>
-              </div>
-            ) : (
-              <Link to="/login" className="btn-pro btn-pro-primary">IENĀKT</Link>
-            )}
-          </nav>
-        </div>
-      </header>
+    <div style={{ minHeight: '100vh', background: '#020617', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
+      {/* PROFESSIONAL TOP NAV */}
+      <nav style={{ 
+        height: '70px', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)', 
+        borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', 
+        justifyContent: 'space-between', padding: '0 40px', position: 'sticky', top: 0, zIndex: 1000 
+      }}>
+        <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fff', textDecoration: 'none', letterSpacing: '-1px' }}>
+          30Sek24<span style={{ color: '#3b82f6' }}>.com</span>
+        </Link>
 
-      {/* Main Content */}
-      <main style={{ flexGrow: 1, minHeight: 'calc(100vh - 73px)' }}>
+        <div style={{ display: 'flex', gap: '5px' }}>
+          {navItems.map(item => (
+            <Link 
+              key={item.path} 
+              to={item.path} 
+              style={{ 
+                padding: '10px 15px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.75rem', 
+                fontWeight: 800, color: location.pathname === item.path ? '#fff' : '#64748b',
+                background: location.pathname === item.path ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                transition: 'all 0.2s', border: location.pathname === item.path ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent'
+              }}
+            >
+              <span style={{ marginRight: '8px' }}>{item.icon}</span>
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <Link to="/expo" style={{ background: '#8b5cf6', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 900, fontSize: '0.8rem' }}>LIVE EXPO</Link>
+          <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}></div>
+        </div>
+      </nav>
+
+      {/* PAGE CONTENT */}
+      <main style={{ padding: '20px' }}>
         <Outlet />
       </main>
 
-      {/* Footer (Hidden on Expo pages) */}
-      {!isExpo && (
-        <footer style={{ 
-          padding: '80px 24px 40px', 
-          background: 'rgba(2, 6, 23, 0.5)', 
-          borderTop: '1px solid var(--border-glass)',
-          color: 'var(--text-secondary)'
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '60px' }}>
-              <div>
-                <h4 style={{ color: '#fff', marginBottom: '20px' }}>Platformu Centrs</h4>
-                <p style={{ fontSize: '0.9rem' }}>Pasaulē pirmā 3D būvniecības ekosistēma. Tāmes, speciālisti un 3D izstādes vienuviet.</p>
-              </div>
-              <div>
-                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Resursi</h5>
-                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
-                  <li><Link to="/kalkulators" style={{ color: 'inherit', textDecoration: 'none' }}>PRO Kalkulatori</Link></li>
-                  <li><Link to="/expo" style={{ color: 'inherit', textDecoration: 'none' }}>3D Metaverse Expo</Link></li>
-                  <li><Link to="/bizness30" style={{ color: 'inherit', textDecoration: 'none' }}>30 Dienu Spēle</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Juridiskā info</h5>
-                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
-                  <li><Link to="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Lietošanas noteikumi</Link></li>
-                  <li><Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privātuma politika</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h5 style={{ color: '#fff', marginBottom: '20px' }}>Kontakti</h5>
-                <p style={{ fontSize: '0.9rem' }}>support@platformucentrs.lv</p>
-                <p style={{ fontSize: '0.9rem' }}>+371 20000000</p>
-              </div>
-            </div>
-            <div style={{ textAlign: 'center', paddingTop: '40px', borderTop: '1px solid var(--border-glass)', fontSize: '0.8rem' }}>
-              &copy; 2026 Platformu Centrs Metaverse. Built with 3D Precision.
-            </div>
-          </div>
-        </footer>
-      )}
-
-      {/* Floating Expo Button */}
-      {!isExpo && sessionStorage.getItem('expo_camera_pos') && (
-        <button 
-          onClick={() => navigate('/expo')}
-          className="glass-card"
-          style={{ 
-            position: 'fixed', bottom: '40px', left: '40px', zIndex: 999,
-            padding: '16px 32px', borderRadius: '50px', cursor: 'pointer',
-            color: '#fff', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px',
-            border: '2px solid var(--accent-primary)', textTransform: 'uppercase'
-          }}
-        >
-          <span>←</span> Atpakaļ uz Izstādi
-        </button>
-      )}
-
-      <style>{`
-        .nav-link {
-          text-decoration: none;
-          color: var(--text-secondary);
-          transition: color 0.2s;
-        }
-        .nav-link:hover {
-          color: var(--text-primary);
-        }
-        .layout-root {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-      `}</style>
+      {/* SYSTEM STATUS BAR */}
+      <footer style={{ 
+        height: '30px', background: '#0f172a', borderTop: '1px solid #1e293b', 
+        display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '0.65rem', 
+        color: '#475569', position: 'fixed', bottom: 0, width: '100%', zIndex: 1000 
+      }}>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <span>NODE: RTX_4080_ULTRA</span>
+          <span>STATUS: ONLINE</span>
+          <span style={{ color: '#10b981' }}>SYSTEM_SYNC: ACTIVE</span>
+        </div>
+      </footer>
     </div>
   );
-}
+};
+
+export default Layout;

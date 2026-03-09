@@ -1,0 +1,12 @@
+export { default as VisualsCalc } from './VisualsCalc';
+export { default as DigitalArtCalc } from './DigitalArtCalc';
+export { default as RoofCalc } from './RoofCalc';
+export { default as HeatingCalc } from './HeatingCalc';
+export { default as FoundationCalc } from './FoundationCalc';
+export { default as InteriorCalc } from './InteriorCalc';
+export { default as PlumbingCalc } from './PlumbingCalc';
+export { default as TimberHouseCalc } from './TimberHouseCalc';
+export { default as WindowsCalc } from './WindowsCalc';
+export { default as AutoserviceCalc } from './AutoserviceCalc';
+export { default as CleaningCalc } from './CleaningCalc';
+export { default as QuickFixCalc } from './QuickFixCalc';

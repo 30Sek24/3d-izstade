@@ -24,8 +24,10 @@ export default function FutureOracle() {
   });
 
   async function handleSubmit() {
-    if (!apiKey) {
-      setError('Lūdzu, ievadiet OpenAI API atslēgu drošības panelī.');
+    const finalKey = apiKey || import.meta.env.VITE_OPENAI_API_KEY;
+    
+    if (!finalKey) {
+      setError('Lūdzu, konfigurējiet VITE_OPENAI_API_KEY .env failā vai ievadiet šeit.');
       return;
     }
 
@@ -33,7 +35,7 @@ export default function FutureOracle() {
     setError('');
     
     try {
-      const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
+      const openai = new OpenAI({ apiKey: finalKey, dangerouslyAllowBrowser: true });
       
       const prompt = `Esi nākotnes biznesa orākuls. Analizē šo profilu:
       Vecums: ${profile.age}
@@ -47,9 +49,10 @@ export default function FutureOracle() {
       Atbildi JSON formātā ar šādiem laukiem: prediction, recommendation, estimated_income_2030, risk_level. Atbildi latviski.`;
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        temperature: 0.7
       });
 
       const content = response.choices[0].message.content;

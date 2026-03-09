@@ -3,7 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, Text, Html, Sky, Stars, Environment, Float, MeshReflectorMaterial, Bvh } from '@react-three/drei';
 import { EffectComposer, Bloom, ChromaticAberration, Noise } from '@react-three/postprocessing';
 import { useParams, Link } from 'react-router-dom';
-import { supabase, supabaseUrl } from '../../lib/supabase';
+import { supabase, supabaseUrl } from '../../core/supabase';
 import * as THREE from 'three';
 
 // --- Shared Components for Theme ---

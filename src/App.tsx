@@ -1,85 +1,85 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 
-// Core un mazās lapas
+// Core un pamata lapas
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 
-// Smagās lapas un kalkulatori lādējas caur Lazy (Code Splitting)
-const Expo3D = lazy(() => import('./pages/Expo3D'));
+// Moduļu ielāde
+const Dashboard = lazy(() => import('./modules/dashboard/Dashboard'));
+const ProjectBuilder = lazy(() => import('./modules/projects/ProjectBuilder'));
+const CityMap = lazy(() => import('./modules/expo/CityMap'));
+const AiGenerator = lazy(() => import('./modules/ai-tools/AiGenerator'));
+const BusinessAccelerator = lazy(() => import('./modules/ai-tools/BusinessAccelerator'));
+const AiAgentDashboard = lazy(() => import('./modules/ai-tools/AiAgentDashboard'));
+const AdminFinance = lazy(() => import('./modules/finance/AdminFinance'));
+const StudioMaster = lazy(() => import('./modules/finance/StudioMaster'));
+const YoutubeManager = lazy(() => import('./modules/finance/YoutubeManager'));
+
+// Kalkulatori
+const RoofCalculator = lazy(() => import('./modules/calculators/RoofCalc'));
+const HeatingCalculator = lazy(() => import('./modules/calculators/HeatingCalc'));
+const FoundationCalculator = lazy(() => import('./modules/calculators/FoundationCalc'));
+const RenovationCalculator = lazy(() => import('./modules/calculators/InteriorCalc')); 
+
+// Expo
+const Expo3D = lazy(() => import('./modules/expo/Expo3D'));
+const DigitalGallery = lazy(() => import('./modules/expo/DigitalGallery'));
+const ProjectorRoom = lazy(() => import('./modules/expo/ProjectorRoom'));
 const BoothRoom = lazy(() => import('./pages/expo/BoothRoom'));
-const Calculator = lazy(() => import('./pages/Calculator'));
-const AutoserviceCalc = lazy(() => import('./pages/AutoserviceCalc'));
-const InteriorCalc = lazy(() => import('./pages/InteriorCalc'));
-const HeatingCalc = lazy(() => import('./pages/HeatingCalc'));
-const HousingCalc = lazy(() => import('./pages/HousingCalc'));
-const RoofCalc = lazy(() => import('./pages/RoofCalc'));
-const TimberHouseCalc = lazy(() => import('./pages/TimberHouseCalc'));
-const FoundationCalc = lazy(() => import('./pages/FoundationCalc'));
-const PlumbingCalc = lazy(() => import('./pages/PlumbingCalc'));
-const DesignerCalc = lazy(() => import('./pages/DesignerCalc'));
-const CleaningCalc = lazy(() => import('./pages/CleaningCalc'));
-const LogisticsCalc = lazy(() => import('./pages/LogisticsCalc'));
-const WindowsCalc = lazy(() => import('./pages/WindowsCalc'));
-const QuickFixCalc = lazy(() => import('./pages/QuickFixCalc'));
-const BusinessGame = lazy(() => import('./pages/BusinessGame'));
-const FutureOracle = lazy(() => import('./pages/FutureOracle'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-const Terms = lazy(() => import('./pages/Terms'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const MarketingAutopilot = lazy(() => import('./pages/MarketingAutopilot'));
-const DocumentHub = lazy(() => import('./pages/DocumentHub'));
-const SosEmergency = lazy(() => import('./pages/SosEmergency'));
-const AdminFinance = lazy(() => import('./pages/AdminFinance'));
+const CompanyAdmin = lazy(() => import('./pages/expo/CompanyAdmin'));
+const Marketplace = lazy(() => import('./modules/expo/Marketplace'));
+const UrgentServices = lazy(() => import('./modules/expo/UrgentServices'));
+const EventsHub = lazy(() => import('./modules/expo/EventsHub'));
+const AdsNetwork = lazy(() => import('./modules/expo/AdsNetwork'));
+const FurnitureShowroom = lazy(() => import('./modules/expo/FurnitureShowroom'));
 
-// Loading komponente pārejas laikam
-const PageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#64748b' }}>
-    Ielādē sistēmas moduļus...
-  </div>
-);
+// Placeholders
+const ClientsPlaceholder = () => <div style={{ color: 'white', padding: '100px' }}><h1>Clients Module</h1></div>;
+const DocumentsPlaceholder = () => <div style={{ color: 'white', padding: '100px' }}><h1>Documents Module</h1></div>;
+const SettingsPlaceholder = () => <div style={{ color: 'white', padding: '100px' }}><h1>Settings Module</h1></div>;
+const CalculatorsHub = () => <div style={{ color: 'white', padding: '100px' }}><h1>Calculators Hub</h1></div>;
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
+      <Suspense fallback={<div style={{ color: 'white', padding: '100px' }}>Initializing Warpala OS...</div>}>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            
-            {/* Lazy Routes */}
-            <Route path="pricing" element={<Pricing />} />
-            <Route path="terms" element={<Terms />} />
-            <Route path="privacy" element={<Privacy />} />
-            <Route path="finances" element={<AdminFinance />} />
-            <Route path="autopilots" element={<MarketingAutopilot />} />
-            <Route path="dokumenti" element={<DocumentHub />} />
-            <Route path="kalkulators" element={<Calculator />} />
-            <Route path="apdare" element={<InteriorCalc />} />
-            <Route path="apkure" element={<HeatingCalc />} />
-            <Route path="autoserviss" element={<AutoserviceCalc />} />
-            <Route path="majoklis" element={<HousingCalc />} />
-            <Route path="jumti" element={<RoofCalc />} />
-            <Route path="kokamajas" element={<TimberHouseCalc />} />
-            <Route path="pamati" element={<FoundationCalc />} />
-            <Route path="santehnika" element={<PlumbingCalc />} />
-            <Route path="dizains" element={<DesignerCalc />} />
-            <Route path="uzkopsana" element={<CleaningCalc />} />
-            <Route path="sagade" element={<LogisticsCalc />} />
-            <Route path="logi" element={<WindowsCalc />} />
-            <Route path="uzfrisinasana" element={<QuickFixCalc />} />
-            <Route path="bizness30" element={<BusinessGame />} />
-            <Route path="orakuls" element={<FutureOracle />} />
-            <Route path="avarija" element={<SosEmergency />} />
-            
-            {/* Smagākais 3D ielādes bloks */}
-            <Route path="expo" element={<Expo3D />} />
-            <Route path="expo/stends/:id" element={<BoothRoom />} />
+            <Route path="dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
+            <Route path="city-map" element={<Suspense fallback={null}><CityMap /></Suspense>} />
+            <Route path="projects" element={<Suspense fallback={null}><ProjectBuilder /></Suspense>} />
+            <Route path="clients" element={<ClientsPlaceholder />} />
+            <Route path="calculators" element={<CalculatorsHub />} />
+            <Route path="marketplace" element={<Marketplace />} />
+            <Route path="urgent-services" element={<UrgentServices />} />
+            <Route path="events" element={<EventsHub />} />
+            <Route path="ads-network" element={<AdsNetwork />} />
+            <Route path="generator" element={<Suspense fallback={null}><AiGenerator /></Suspense>} />
+            <Route path="akcelerators" element={<Suspense fallback={null}><BusinessAccelerator /></Suspense>} />
+            <Route path="ai-agent" element={<Suspense fallback={null}><AiAgentDashboard /></Suspense>} />
+            <Route path="finances" element={<Suspense fallback={null}><AdminFinance /></Suspense>} />
+            <Route path="studija" element={<Suspense fallback={null}><StudioMaster /></Suspense>} />
+            <Route path="youtube" element={<Suspense fallback={null}><YoutubeManager /></Suspense>} />
+            <Route path="documents" element={<DocumentsPlaceholder />} />
+            <Route path="settings" element={<SettingsPlaceholder />} />
+            <Route path="roof-cost-calculator" element={<Suspense fallback={null}><RoofCalculator /></Suspense>} />
+            <Route path="heating-cost-calculator" element={<Suspense fallback={null}><HeatingCalculator /></Suspense>} />
+            <Route path="foundation-cost-calculator" element={<Suspense fallback={null}><FoundationCalculator /></Suspense>} />
+            <Route path="renovation-cost-calculator" element={<Suspense fallback={null}><RenovationCalculator /></Suspense>} />
+            <Route path="izveidot-projektu" element={<Suspense fallback={null}><ProjectBuilder /></Suspense>} />
+            <Route path="expo" element={<Navigate to="/expo-3d" />} />
+            <Route path="expo/admin" element={<Suspense fallback={null}><CompanyAdmin /></Suspense>} />
           </Route>
+          
+          <Route path="/expo-3d" element={<Suspense fallback={null}><Expo3D /></Suspense>} />
+          <Route path="/expo/booth/:id" element={<Suspense fallback={null}><BoothRoom /></Suspense>} />
+          <Route path="/expo/showroom/:id" element={<Suspense fallback={null}><FurnitureShowroom /></Suspense>} />
+          <Route path="/galerija" element={<Suspense fallback={null}><DigitalGallery /></Suspense>} />
+          <Route path="/projekcija" element={<Suspense fallback={null}><ProjectorRoom /></Suspense>} />
         </Routes>
       </Suspense>
     </BrowserRouter>

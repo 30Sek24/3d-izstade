@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import '../components/calculator/styles/CalculatorPro.css';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../core/supabase';
 
 interface Autopilot {
   id: string;

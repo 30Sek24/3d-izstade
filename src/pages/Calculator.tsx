@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import CalculatorEditor from '../components/calculator/CalculatorEditor';
-import { MODULES } from '../lib/calculator';
+import { MODULES } from '../core/calculator';
+
+const VisualsCalc = lazy(() => import('../modules/calculators/VisualsCalc'));
 
 const CATEGORIES = [
   { id: 'renovation', title: 'MĀJOKĻA REMONTS', icon: '🏠', desc: 'Dzīvokļu un māju atjaunošana' },
   { id: 'autoservice', title: 'AUTO SERVISS', icon: '🚗', desc: 'Remonts un tehniskā apkope' },
   { id: 'marketing', title: 'BIZNESA PAKALPOJUMI', icon: '📈', desc: 'Mārketings un aģenta serviss' },
+  { id: 'visuals', title: 'MEDIA PRODUKCIJA', icon: '🎬', desc: '4K/8K Video un 3D vizualizācijas' },
   { id: 'real_estate', title: 'NĪ INVESTĪCIJAS', icon: '🏢', desc: 'Īpašumu novērtēšana un peļņa' },
 ];
 
 export default function Calculator() {
-  const [selectedModule, setSelectedModule] = useState<typeof MODULES[number] | null>(null);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
 
   if (selectedModule) {
     return (
@@ -21,7 +24,13 @@ export default function Calculator() {
         >
           ← Atpakaļ uz izvēlni
         </button>
-        <CalculatorEditor initialModule={selectedModule} />
+        <Suspense fallback={<div>Ielādē kalkulatoru...</div>}>
+          {selectedModule === 'visuals' ? (
+            <VisualsCalc />
+          ) : (
+            <CalculatorEditor initialModule={selectedModule as any} />
+          )}
+        </Suspense>
       </div>
     );
   }

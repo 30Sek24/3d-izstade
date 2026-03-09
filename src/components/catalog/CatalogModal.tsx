@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { REGIONS } from '../../lib/catalog-types';
-import type { CatalogItem } from '../../lib/catalog-types';
+import { REGIONS } from '../../core/catalog-types';
+import type { CatalogItem } from '../../core/catalog-types';
 import './CatalogModal.css';
 
 interface CatalogModalProps {

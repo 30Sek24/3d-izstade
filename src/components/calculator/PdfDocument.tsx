@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import type { EstimateLine, Section } from '../../lib/calculator-types';
+import type { EstimateLine, Section } from '../../models/types';
 
 interface PdfDocumentProps {
   lines: EstimateLine[];

@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { 
   OBJECT_TYPES, LOCATION_OPTIONS, QUALITY_LEVELS, MODULES,
   calculateEstimate 
-} from '../../lib/calculator';
-import type { CalculatorInput } from '../../lib/calculator';
+} from '../../core/calculator';
+import type { CalculatorInput } from '../../core/calculator';
 import './styles/CalculatorPro.css';
 
 interface Props {
