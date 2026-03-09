@@ -78,6 +78,45 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
+
+/* MOBILE MENU OVERLAY */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.98);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.burger-btn {
+  display: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .burger-btn { display: flex; }
+  .desktop-nav { display: none !important; }
+}
+
 /* RESPONSIVE SYSTEM */
 @media (max-width: 768px) {
   .calculator-pro-wrapper {
@@ -85,18 +124,14 @@ body {
   }
 
   .calc-header h1 {
-    font-size: 2rem !important;
+    font-size: 2.2rem !important;
   }
 
   .calc-grid {
     grid-template-columns: 1fr !important;
   }
 
-  .glass-card {
-    padding: 20px !important;
-  }
-
-  /* Marketplace / Hub Grid Fix */
+  /* Force grids to single column */
   div[style*="display: grid"] {
     grid-template-columns: 1fr !important;
   }
@@ -107,24 +142,15 @@ body {
   }
 
   nav {
-    padding: 0 15px !important;
-    height: 60px !important;
-  }
-
-  nav a[style*="font-size: 1.5rem"] {
-    font-size: 1.2rem !important;
-  }
-
-  /* Hide Desktop Nav items on mobile for now (until we add burger) */
-  nav div[style*="display: flex"] a {
-    font-size: 0.65rem !important;
-    padding: 5px 8px !important;
+    padding: 0 20px !important;
+    height: 65px !important;
   }
 }
 
-/* ANIMATIONS */
-...
-
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+}
 ::-webkit-scrollbar-track {
   background: #020617;
 }
@@ -134,4 +160,13 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
+}
+
+/* SPINNER */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

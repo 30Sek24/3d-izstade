@@ -6,6 +6,15 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 
+// ==========================================
+// PHASE 15: AI Platform Pages
+// ==========================================
+const PlatformDashboard = lazy(() => import('./pages/DashboardPage'));
+const PlatformAgents = lazy(() => import('./pages/AgentsPage'));
+const PlatformLeads = lazy(() => import('./pages/LeadsPage'));
+const PlatformMarketplace = lazy(() => import('./pages/MarketplacePage'));
+const PlatformExpo = lazy(() => import('./pages/ExpoPage'));
+
 // Moduļu ielāde
 const Dashboard = lazy(() => import('./modules/dashboard/Dashboard'));
 const ProjectBuilder = lazy(() => import('./modules/projects/ProjectBuilder'));
@@ -36,6 +45,7 @@ const UrgentServices = lazy(() => import('./modules/expo/UrgentServices'));
 const EventsHub = lazy(() => import('./modules/expo/EventsHub'));
 const AdsNetwork = lazy(() => import('./modules/expo/AdsNetwork'));
 const FurnitureShowroom = lazy(() => import('./modules/expo/FurnitureShowroom'));
+const SectorPage = lazy(() => import('./modules/expo/SectorPage'));
 
 // Citi moduļi
 const ClientsDashboard = lazy(() => import('./modules/clients/ClientsDashboard'));
@@ -54,6 +64,14 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="login" element={<Login />} />
+            
+            {/* Jaunie AI Platformas Maršruti (Phase 15) */}
+            <Route path="platform/dashboard" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformDashboard /></Suspense>} />
+            <Route path="platform/agents" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformAgents /></Suspense>} />
+            <Route path="platform/leads" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformLeads /></Suspense>} />
+            <Route path="platform/marketplace" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformMarketplace /></Suspense>} />
+            <Route path="platform/expo" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformExpo /></Suspense>} />
+
             <Route path="dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
             <Route path="city-map" element={<Suspense fallback={null}><CityMap /></Suspense>} />
             <Route path="projects" element={<Suspense fallback={null}><ProjectBuilder /></Suspense>} />
@@ -76,6 +94,7 @@ export default function App() {
             <Route path="youtube" element={<Suspense fallback={null}><YoutubeManager /></Suspense>} />
             <Route path="documents" element={<Suspense fallback={null}><DocumentHub /></Suspense>} />
             <Route path="settings" element={<Suspense fallback={null}><Settings /></Suspense>} />
+            <Route path="sector/:id" element={<Suspense fallback={null}><SectorPage /></Suspense>} />
             
             {/* Kalkulatoru tiešie maršruti */}
             <Route path="roof-cost-calculator" element={<Suspense fallback={null}><RoofCalculator /></Suspense>} />

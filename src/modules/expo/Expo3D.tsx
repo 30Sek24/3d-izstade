@@ -350,7 +350,7 @@ export default function Expo3D() {
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, #020617 100%)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
           <div className="glass-card" style={{ padding: '60px 80px' }}>
             <h1 className="text-accent" style={{ fontSize: '5rem', fontWeight: 950, margin: 0 }}>WARPALA</h1>
-            <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '50px' }}>INDUSTRIAL METAVERSE</h2>
+            <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '50px' }}>INDUSTRIĀLĀ METAVERSE</h2>
             <div style={{ display: 'flex', gap: '20px' }}>
               <button onClick={() => { setMode('walk'); setTimeout(() => document.body.requestPointerLock(), 100); }} className="btn-primary">🚶 WALK EXPO</button>
               <button onClick={() => setMode('fly')} className="btn-glass">🦅 DRONE VIEW</button>
