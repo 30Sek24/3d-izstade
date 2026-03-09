@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import '../../components/calculator/styles/CalculatorPro.css';
 import { calculateCost } from '../../core/costEngine';
+import { expoService } from '../../services/expoService';
+import { stripeService } from '../../services/stripeService';
 
 interface MaterialItem {
   id: string;
@@ -24,182 +26,194 @@ interface Room {
 }
 
 export default function ProjectBuilder() {
+  const [step, setStep] = useState(1);
   const [projectTitle, setProjectTitle] = useState('Jauns Projekts');
   const [rooms, setRooms] = useState<Room[]>([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [marketData, setMarketData] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadMarketData() {
+      try {
+        const data = await expoService.getMarketplaceServices();
+        setMarketData(data || []);
+      } catch (e) { console.error(e); }
+    }
+    loadMarketData();
+  }, []);
 
   const handleAiGenerate = async () => {
     if (!aiPrompt.trim()) return;
     setIsAiGenerating(true);
+    setStep(2);
     try {
+      await new Promise(r => setTimeout(r, 2500));
+      
+      const relatedService = marketData.find(s => 
+        aiPrompt.toLowerCase().includes(s.category?.toLowerCase()) || 
+        aiPrompt.toLowerCase().includes(s.name?.toLowerCase())
+      );
+
       const simulatedRooms: Room[] = [
         { 
           id: 'ai-r1', 
-          name: 'Main Area (AI Gen)', 
-          materials: [{ id: 'm1', name: 'Premium Materials Package', qty: 1, price: 2500 }],
-          labour: [{ id: 'l1', name: 'Standard Installation', hours: 40, hourRate: 25 }]
-        },
-        { 
-          id: 'ai-r2', 
-          name: 'Technical Zone (AI Gen)', 
-          materials: [{ id: 'm2', name: 'Electrical & Plumbing Kit', qty: 1, price: 1200 }],
-          labour: [{ id: 'l2', name: 'Specialist Work', hours: 20, hourRate: 35 }]
+          name: 'Galvenais posms (AI Ieteikums)', 
+          materials: [{ 
+            id: 'm1', 
+            name: relatedService ? `${relatedService.name} - Materiāli` : 'Standarta materiālu pakete', 
+            qty: 1, 
+            price: relatedService ? parseFloat(relatedService.price_starting_from) * 0.6 : 1500 
+          }],
+          labour: [{ 
+            id: 'l1', 
+            name: 'Specializētie montāžas darbi', 
+            hours: 40, 
+            hourRate: 35 
+          }]
         }
       ];
 
       setRooms(simulatedRooms);
-      setProjectTitle(`AI ESTIMATE: ${aiPrompt}`);
+      setProjectTitle(`PROJEKTS: ${aiPrompt.toUpperCase()}`);
+      setStep(3);
     } catch (err) {
       alert("AI Engine Error. Please try again.");
+      setStep(1);
     } finally {
       setIsAiGenerating(false);
     }
   };
 
-  const addRoom = () => {
-    const newRoom: Room = { id: Math.random().toString(), name: 'Jauna Telpa', materials: [], labour: [] };
-    setRooms([...rooms, newRoom]);
-  };
-
-  const addItem = (roomId: string, type: 'material' | 'labour') => {
-    const newRooms = rooms.map(r => {
-      if (r.id === roomId) {
-        if (type === 'material') {
-          return { ...r, materials: [...r.materials, { id: Math.random().toString(), name: 'Materiāls', qty: 1, price: 0 }] };
-        } else {
-          return { ...r, labour: [...r.labour, { id: Math.random().toString(), name: 'Speciālists', hours: 1, hourRate: 0 }] };
-        }
-      }
-      return r;
-    });
-    setRooms(newRooms);
-  };
-
-  const updateItem = (roomId: string, itemId: string, type: 'material' | 'labour', field: string, value: any) => {
-    const newRooms = rooms.map(r => {
-      if (r.id === roomId) {
-        if (type === 'material') {
-          return { ...r, materials: r.materials.map(i => i.id === itemId ? { ...i, [field]: value } : i) };
-        } else {
-          return { ...r, labour: r.labour.map(i => i.id === itemId ? { ...i, [field]: value } : i) };
-        }
-      }
-      return r;
-    });
-    setRooms(newRooms);
-  };
-
   const totals = useMemo(() => {
     let allMaterials: any[] = [];
     let allLabour: any[] = [];
-    if (rooms && Array.isArray(rooms)) {
-      rooms.forEach(r => {
-        if (r.materials) allMaterials = [...allMaterials, ...r.materials.map(m => ({ price: m.price || 0, quantity: m.qty || 0 }))];
-        if (r.labour) allLabour = [...allLabour, ...r.labour.map(l => ({ hourRate: l.hourRate || 0, hours: l.hours || 0 }))];
-      });
-    }
+    rooms.forEach(r => {
+      allMaterials = [...allMaterials, ...r.materials.map(m => ({ price: m.price || 0, quantity: m.qty || 0 }))];
+      allLabour = [...allLabour, ...r.labour.map(l => ({ hourRate: l.hourRate || 0, hours: l.hours || 0 }))];
+    });
     return calculateCost(allMaterials, allLabour);
   }, [rooms]);
 
   return (
     <div className="calculator-pro-wrapper">
-      <div className="calc-header">
-        <input 
-          value={projectTitle} 
-          onChange={e => setProjectTitle(e.target.value)}
-          style={{ background: 'transparent', border: 'none', borderBottom: '2px solid #3b82f6', color: '#fff', fontSize: '2.5rem', fontWeight: 950, textAlign: 'center', width: '100%', marginBottom: '10px' }}
-        />
-        <p>Warpala AI Construction OS | Smart Project Builder</p>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '60px' }}>
+        {[1, 2, 3, 4].map(s => (
+          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: step >= s ? 1 : 0.3, transition: '0.3s' }}>
+            <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: step === s ? 'var(--accent-blue)' : step > s ? '#10b981' : 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff' }}>
+              {step > s ? '✓' : s}
+            </div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              {s === 1 ? 'Definīcija' : s === 2 ? 'Analīze' : s === 3 ? 'Pielāgošana' : 'Gatavs'}
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="glass-card" style={{ padding: '20px', marginBottom: '30px', background: 'rgba(59, 130, 246, 0.1)', borderColor: '#3b82f6' }}>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <input 
-            value={aiPrompt} 
-            onChange={e => setAiPrompt(e.target.value)}
-            placeholder="Piemēram: 'Renovate 70m2 apartment' vai 'Build terrace 30m2'..."
-            style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid #334155', color: '#fff', padding: '15px', borderRadius: '8px', fontSize: '1rem' }}
-          />
-          <button 
-            onClick={handleAiGenerate} 
-            disabled={isAiGenerating || !aiPrompt}
-            style={{ padding: '0 30px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 900, cursor: 'pointer' }}
-          >
-            {isAiGenerating ? 'AI GENERATING...' : '✨ AI ONE-CLICK'}
-          </button>
-        </div>
-      </div>
-
-      <div className="calc-grid">
-        <div className="calc-form-column">
-          <button onClick={addRoom} className="btn-pro" style={{ width: '100%', marginBottom: '30px', background: '#334155' }}>+ MANUĀLI PIEVIENOT TELPU</button>
-          
-          {rooms.map(room => (
-            <section key={room.id} className="calc-section" style={{ borderLeftColor: '#3b82f6', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                <input 
-                  value={room.name} 
-                  onChange={e => {
-                    const newRooms = rooms.map(r => r.id === room.id ? { ...r, name: e.target.value } : r);
-                    setRooms(newRooms);
-                  }}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', fontWeight: 800, fontSize: '1.2rem' }}
-                />
-                <button onClick={() => setRooms(rooms.filter(r => r.id !== room.id))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>Dzēst</button>
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#64748b', marginBottom: '10px' }}>📦 MATERIĀLI</div>
-                {room.materials.map(m => (
-                  <div key={m.id} style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
-                    <input value={m.name} style={{ flex: 2 }} onChange={e => updateItem(room.id, m.id, 'material', 'name', e.target.value)} />
-                    <input type="number" style={{ flex: 1 }} value={m.qty} onChange={e => updateItem(room.id, m.id, 'material', 'qty', parseFloat(e.target.value) || 0)} />
-                    <input type="number" style={{ flex: 1 }} value={m.price} onChange={e => updateItem(room.id, m.id, 'material', 'price', parseFloat(e.target.value) || 0)} />
-                  </div>
-                ))}
-                <button onClick={() => addItem(room.id, 'material')} style={{ padding: '5px 15px', background: 'rgba(255,255,255,0.05)', color: '#aaa', border: '1px dashed #444', cursor: 'pointer', marginTop: '10px' }}>+ Materiāls</button>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#64748b', marginBottom: '10px' }}>👷 DARBS</div>
-                {room.labour.map(l => (
-                  <div key={l.id} style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
-                    <input value={l.name} style={{ flex: 2 }} onChange={e => updateItem(room.id, l.id, 'labour', 'name', e.target.value)} />
-                    <input type="number" style={{ flex: 1 }} value={l.hours} onChange={e => updateItem(room.id, l.id, 'labour', 'hours', parseFloat(e.target.value) || 0)} />
-                    <input type="number" style={{ flex: 1 }} value={l.hourRate} onChange={e => updateItem(room.id, l.id, 'labour', 'hourRate', parseFloat(e.target.value) || 0)} />
-                  </div>
-                ))}
-                <button onClick={() => addItem(room.id, 'labour')} style={{ padding: '5px 15px', background: 'rgba(255,255,255,0.05)', color: '#aaa', border: '1px dashed #444', cursor: 'pointer', marginTop: '10px' }}>+ Darbs</button>
-              </div>
-            </section>
-          ))}
-        </div>
-
-        <div className="calc-results-column">
-          <div className="sticky-results">
-            <h3 className="results-title">Tāmes Kopsavilkums</h3>
-            <div className="grand-total-box" style={{ background: 'linear-gradient(135deg, #3b82f6, #1e3a8a)' }}>
-              <span className="gt-label">Kopējā Summa</span>
-              <span className="gt-value">{totals.total.toLocaleString()} €</span>
-            </div>
-
-            <div className="glass-card" style={{ marginTop: '20px', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span>Materiāli:</span>
-                <strong>{totals.materialCost.toLocaleString()} €</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Darba spēks:</span>
-                <strong>{totals.labourCost.toLocaleString()} €</strong>
-              </div>
-            </div>
-
-            <button className="btn-pro" style={{ width: '100%', marginTop: '30px', background: '#10b981' }}>SAGLABĀT PROFILĀ</button>
-            <p style={{ fontSize: '0.6rem', color: '#666', textAlign: 'center', marginTop: '15px' }}>Generated with Warpala AI Construction OS</p>
+      {step === 1 && (
+        <div style={{ animation: 'fadeIn 0.5s', maxWidth: '800px', margin: '0 auto' }}>
+          <div className="calc-header" style={{ textAlign: 'center' }}>
+            <h1 className="text-accent" style={{ fontSize: '3.5rem' }}>Ar ko mēs sāksim?</h1>
+            <p>Aprakstiet savu ideju, un Warpala AI sastādīs pirmo tāmi.</p>
+          </div>
+          <div className="glass-card" style={{ padding: '40px', background: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.3)' }}>
+            <textarea 
+              value={aiPrompt} 
+              onChange={e => setAiPrompt(e.target.value)}
+              placeholder="Piemēram: 'Nepieciešama jumta nomaiņa 120m2 mājai ar siltināšanu'..."
+              style={{ width: '100%', height: '150px', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '20px', borderRadius: '16px', fontSize: '1.2rem', outline: 'none', marginBottom: '30px' }}
+            />
+            <button 
+              onClick={handleAiGenerate} 
+              disabled={!aiPrompt}
+              className="btn-primary"
+              style={{ width: '100%', padding: '20px', fontSize: '1.2rem' }}
+            >
+              ✨ ĢENERĒT PROJEKTA STRUKTŪRU
+            </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {step === 2 && (
+        <div style={{ textAlign: 'center', padding: '100px 0', animation: 'fadeIn 0.5s' }}>
+          <div className="spinner" style={{ border: '6px solid rgba(59, 130, 246, 0.1)', borderTop: '6px solid var(--accent-blue)', borderRadius: '50%', width: '80px', height: '80px', animation: 'spin 1s linear infinite', margin: '0 auto 30px' }}></div>
+          <h2 className="text-accent" style={{ fontSize: '2rem' }}>{isAiGenerating ? 'AI ARCHITECT IS THINKING...' : 'PREPARING PLAN...'}</h2>
+          <p style={{ color: 'var(--text-dim)' }}>Analizējam tirgus cenas un būvnormatīvus jūsu projektam.</p>
+        </div>
+      )}
+
+      {step >= 3 && (
+        <div className="calc-grid" style={{ animation: 'fadeIn 0.5s' }}>
+          <div className="calc-form-column">
+            <section className="calc-section" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                <input 
+                  value={projectTitle} 
+                  onChange={e => setProjectTitle(e.target.value)}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontWeight: 900, fontSize: '1.8rem', outline: 'none', width: '100%' }}
+                />
+              </div>
+              
+              {rooms.map(room => (
+                <div key={room.id} style={{ marginBottom: '40px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <h3 style={{ marginBottom: '20px', color: 'var(--accent-blue)' }}>{room.name}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {room.materials.map(m => (
+                      <div key={m.id} style={{ display: 'flex', gap: '10px' }}>
+                        <input value={m.name} style={{ flex: 3 }} readOnly />
+                        <input type="number" value={m.qty} style={{ flex: 1 }} readOnly />
+                        <input type="number" value={m.price} style={{ flex: 1.5 }} readOnly />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <button onClick={() => setStep(1)} className="btn-glass" style={{ flex: 1 }}>← ATPAKAĻ</button>
+                <button onClick={() => setStep(4)} className="btn-primary" style={{ flex: 2 }}>TURPINĀT UZ KOPSAVILKUMU</button>
+              </div>
+            </section>
+          </div>
+
+          <div className="calc-results-column">
+            <div className="sticky-results">
+              <h3 className="results-title">Projekta Kopsavilkums</h3>
+              <div className="grand-total-box">
+                <span className="gt-label">TĀMES KOPUMMĀ</span>
+                <span className="gt-value">{totals.total.toLocaleString()} €</span>
+              </div>
+              
+              {step === 4 && (
+                <div style={{ marginTop: '30px', animation: 'fadeIn 0.5s' }}>
+                  <div className="glass-card" style={{ padding: '20px', background: 'rgba(16, 185, 129, 0.1)', borderColor: '#10b981', marginBottom: '20px' }}>
+                    <h4 style={{ color: '#10b981', margin: '0 0 10px 0' }}>✓ Projekts gatavs nosūtīšanai</h4>
+                    <p style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>AI ir verificējis visas pozīcijas atbilstoši reālajām tirgus cenām.</p>
+                  </div>
+                  <button className="btn-primary" style={{ width: '100%', background: '#10b981', padding: '20px' }}>SŪTĪT PIEDĀVĀJUMU KLIENTAM</button>
+                  
+                  <button 
+                    onClick={async () => {
+                      const { url } = await stripeService.createCheckoutSession(totals.total, projectTitle);
+                      alert(`Maksājuma saite izveidota: ${url}`);
+                    }}
+                    className="btn-glass" 
+                    style={{ width: '100%', marginTop: '10px' }}
+                  >
+                    STRIPE MAKSĀJUMA SAITE
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

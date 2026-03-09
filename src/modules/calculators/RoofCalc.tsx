@@ -171,10 +171,10 @@ export default function RoofCalc() {
         {/* KREISĀ PUSE */}
         <div className="calc-form-column">
 
-          <section className="calc-section" style={{ background: '#f8fafc', borderLeftColor: '#f43f5e' }}>
-            <h2>Lokācija un Reģions</h2>
+          <section className="calc-section">
+            <h2>🌍 Lokācija un Reģions</h2>
             <div className="input-group">
-              <select name="country" value={params.country} onChange={handleChange} style={{ fontWeight: 'bold' }}>
+              <select name="country" value={params.country} onChange={handleChange}>
                 {renderCountryOptions()}
               </select>
             </div>
@@ -194,7 +194,7 @@ export default function RoofCalc() {
                 </select>
               </label>
             </div>
-            <div className="input-group-2" style={{ marginTop: '15px' }}>
+            <div className="input-group-2" style={{ marginTop: '20px' }}>
               <label>Slīpums (Grādos)
                 <input type="number" name="pitch" value={params.pitch} onChange={handleChange} min="0" max="60" />
               </label>
@@ -206,14 +206,14 @@ export default function RoofCalc() {
 
           <section className="calc-section">
             <h2>2. Koka Konstrukcijas</h2>
-            <div className="input-group">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '1rem', color: '#0f172a' }}>
-                <input type="checkbox" name="includeTimber" checked={params.includeTimber} onChange={handleChange} style={{ width: '24px', height: '24px' }} />
-                Aprēķināt jaunas spāres un latojumu (Pilna pārbūve)
-              </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <input type="checkbox" name="includeTimber" checked={params.includeTimber} onChange={handleChange} style={{ width: '22px', height: '22px', accentColor: '#3b82f6' }} />
+              <span style={{ fontSize: '1rem', fontWeight: 600 }}>Aprēķināt jaunas spāres un latojumu</span>
             </div>
             {params.includeTimber && (
-              <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '10px' }}>* Tiks automātiski aprēķināts 50x200 spāru un 50x50 latojuma apjoms balstoties uz jumta platību.</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '15px' }}>
+                * Tiks automātiski aprēķināts 50x200 spāru un 50x50 latojuma apjoms balstoties uz jumta platību.
+              </p>
             )}
           </section>
 
@@ -226,16 +226,18 @@ export default function RoofCalc() {
                 </select>
               </label>
             </div>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '10px' }}>* Seguma cenā automātiski tiks iekļauti materiālu pārlaiduma zudumi (5-15%), pretvēja plēve un stiprinājumi.</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '15px' }}>
+              * Seguma cenā automātiski tiks iekļauti materiālu pārlaiduma zudumi (5-15%), pretvēja plēve un stiprinājumi.
+            </p>
           </section>
 
           <section className="calc-section">
             <h2>4. Noteksistēmas</h2>
             <div className="input-group">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '1rem', color: '#0f172a', marginBottom: '10px' }}>
-                <input type="checkbox" name="includeGutters" checked={params.includeGutters} onChange={handleChange} style={{ width: '24px', height: '24px' }} />
-                Iekļaut lietusūdens noteksistēmu
-              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                <input type="checkbox" name="includeGutters" checked={params.includeGutters} onChange={handleChange} style={{ width: '22px', height: '22px', accentColor: '#3b82f6' }} />
+                <span style={{ fontSize: '1rem', fontWeight: 600 }}>Iekļaut lietusūdens noteksistēmu</span>
+              </div>
               {params.includeGutters && (
                 <label>Sistēmas materiāls
                   <select name="gutterMaterial" value={params.gutterMaterial} onChange={handleChange}>
@@ -246,7 +248,9 @@ export default function RoofCalc() {
             </div>
           </section>
 
-          <button onClick={handleCalculate} className="btn-primary" style={{ marginTop: '20px' }}>Ģenerēt Tāmi</button>
+          <button onClick={handleCalculate} className="btn-primary" style={{ width: '100%', padding: '18px', fontSize: '1.1rem' }}>
+            Ģenerēt Profesionālo Tāmi
+          </button>
 
         </div>
 
@@ -257,17 +261,31 @@ export default function RoofCalc() {
             
             {!results ? (
               <div className="empty-state">
-                <div className="empty-state-icon">🏠</div>
+                <div className="empty-state-icon">🏘️</div>
                 <p>Aizpildi ģeometriju un ģenerē tāmi</p>
               </div>
             ) : (
               <>
-                <div className="geom-summary" style={{ marginBottom: '20px', marginTop: 0, padding: '15px', background: '#f8fafc', borderLeft: '4px solid #3b82f6' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>Jumta platība (tīrā):<br/><strong>{results.geom.roofAreaNet.toFixed(1)} m²</strong></div>
-                    <div>Materiāls (ar zudumiem):<br/><strong>{results.geom.roofAreaGross.toFixed(1)} m²</strong></div>
-                    <div>Nepieciešamās Spāres:<br/><strong>{results.geom.raftersLength.toFixed(0)} m</strong></div>
-                    <div>Latojuma brusas:<br/><strong>{results.geom.battensLength.toFixed(0)} m</strong></div>
+                <div style={{ 
+                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', 
+                  marginBottom: '25px', padding: '20px', background: 'rgba(255,255,255,0.03)', 
+                  borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' 
+                }}>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Jumta platība (tīrā):</span>
+                    <strong style={{ fontSize: '1.1rem' }}>{results.geom.roofAreaNet.toFixed(1)} m²</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Materiāls (+zudumi):</span>
+                    <strong style={{ fontSize: '1.1rem' }}>{results.geom.roofAreaGross.toFixed(1)} m²</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Nepieciešamās Spāres:</span>
+                    <strong style={{ fontSize: '1.1rem' }}>{results.geom.raftersLength.toFixed(0)} m</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'block' }}>Latojuma brusas:</span>
+                    <strong style={{ fontSize: '1.1rem' }}>{results.geom.battensLength.toFixed(0)} m</strong>
                   </div>
                 </div>
 
@@ -298,7 +316,7 @@ export default function RoofCalc() {
                       <td>{results.trimsCost.work.toFixed(0)} €</td>
                     </tr>
                     {params.includeGutters && (
-                      <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                      <tr>
                         <td>Noteksistēmas ({results.geom.eavesLength.toFixed(0)}m)</td>
                         <td>{results.guttersCost.mat.toFixed(0)} €</td>
                         <td>{results.guttersCost.work.toFixed(0)} €</td>
@@ -308,8 +326,8 @@ export default function RoofCalc() {
                   <tfoot className="table-totals">
                     <tr>
                       <td>KOPUMMĀ:</td>
-                      <td className="text-blue">{results.totalMat.toFixed(0)} €</td>
-                      <td className="text-orange">{results.totalWork.toFixed(0)} €</td>
+                      <td style={{ color: 'var(--accent-blue)' }}>{results.totalMat.toFixed(0)} €</td>
+                      <td style={{ color: 'var(--accent-purple)' }}>{results.totalWork.toFixed(0)} €</td>
                     </tr>
                   </tfoot>
                 </table>

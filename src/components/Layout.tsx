@@ -1,11 +1,13 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import GlobalChat from './chat/GlobalChat';
 
 const navItems = [
   { path: '/dashboard', label: 'DASHBOARD', icon: '📊' },
   { path: '/projects', label: 'PROJECTS', icon: '📁' },
   { path: '/clients', label: 'CLIENTS', icon: '👥' },
   { path: '/calculators', label: 'CALCULATORS', icon: '🧮' },
+  { path: '/inventory', label: 'INVENTORY', icon: '📦' },
   { path: '/generator', label: 'AI TOOLS', icon: '🧠' },
   { path: '/documents', label: 'DOCUMENTS', icon: '📄' },
   { path: '/finances', label: 'FINANCE', icon: '💰' },
@@ -52,9 +54,12 @@ const Layout: React.FC = () => {
       </nav>
 
       {/* PAGE CONTENT */}
-      <main style={{ padding: '20px' }}>
+      <main style={{ padding: '20px', paddingBottom: '80px' }}>
         <Outlet />
       </main>
+
+      {/* GLOBAL CHAT */}
+      <GlobalChat />
 
       {/* SYSTEM STATUS BAR */}
       <footer style={{ 

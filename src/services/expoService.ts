@@ -65,6 +65,43 @@ export const expoService = {
     return data;
   },
 
+  // MARKETPLACE
+  async getMarketplaceServices(category?: string) {
+    let query = supabase.from('marketplace_services').select('*, company:companies(name)');
+    if (category && category !== 'All') {
+      query = query.eq('category', category);
+    }
+    const { data, error } = await query.eq('is_active', true);
+    if (error) throw error;
+    return data;
+  },
+
+  // REAL-TIME CHAT
+  async getMessages(limit = 50) {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data.reverse();
+  },
+
+  async sendMessage(content: string, isAi = false) {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert([{ content, is_ai: isAi }]);
+    if (error) throw error;
+    return data;
+  },
+
+  subscribeToChat(callback: (payload: any) => void) {
+    return supabase
+      .channel('public:chat_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, callback)
+      .subscribe();
+  },
+
   // Iegūt visus pieprasījumus konkrētam uzņēmumam
   async getServiceRequests(companyId: string) {
     const { data, error } = await supabase

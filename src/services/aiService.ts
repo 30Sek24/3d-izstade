@@ -10,9 +10,16 @@ export async function aiEstimate(description: string) {
 }
 
 /**
- * Sniedz profesionālu padomu vai mārketinga tekstu, balstoties uz AI analīzi.
+ * Ģenerē AI video reklāmu balstoties uz promptu un stilu.
  */
-export async function aiAdvise() {
-  // Simulācija vai reāls izsaukums
-  return "Generated with Warpala AI Construction OS. Ieteikums: Fokuss uz premium materiāliem, lai palielinātu ROI.";
+export async function generateAiVideo(prompt: string, style: string) {
+  console.log(`Iniciē AI Video ģenerēšanu: ${prompt} (Style: ${style})`);
+  // Simulācija reālam API (piem. HeyGen vai Luma)
+  await new Promise(r => setTimeout(r, 5000));
+  
+  return {
+    success: true,
+    videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4',
+    thumbnail: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=400&q=80'
+  };
 }

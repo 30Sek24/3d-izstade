@@ -70,7 +70,7 @@ const ROOM_TYPES = {
 export default function InteriorCalc() {
   const [params, setParams] = useState({
     country: 'lv', roomType: 'living_room', area: 20, height: 2.7, windowArea: 2.5, doorCount: 1,
-    demolitionType: 'none', containerSize: 'none', floorPrep: 'osb', floorCover: 'laminats',
+    demolitionType: 'none', containerSize: 'none', floorPrep: 'betons', floorCover: 'laminats',
     floorSkirting: 'mdf', wallPrep: 'none', wallFinish: 'krasa_standard', ceilingType: 'regipsis',
     elecPoints: 4, imageUrl: '', videoUrl: '',
   });
@@ -164,35 +164,134 @@ export default function InteriorCalc() {
 
       <div className="calc-grid">
         <div className="calc-form-column">
-          <section className="calc-section" style={{ background: '#f8fafc', borderLeftColor: '#334155' }}>
-            <h2>Parametri</h2>
+          <section className="calc-section">
+            <h2>🌍 Lokācijas un Telpas Parametri</h2>
             <div className="input-group">
-              <label>Valsts <select name="country" value={params.country} onChange={handleChange}>{renderCountryOptions()}</select></label>
-              <label style={{ marginTop: '15px' }}>Telpa <select name="roomType" value={params.roomType} onChange={handleChange}>{Object.entries(ROOM_TYPES).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}</select></label>
-              <label style={{ marginTop: '15px' }}>Platība (m²) <input type="number" name="area" value={params.area} onChange={handleChange} /></label>
+              <label>Reģions
+                <select name="country" value={params.country} onChange={handleChange}>{renderCountryOptions()}</select>
+              </label>
+              <div className="input-group-2" style={{ marginTop: '20px' }}>
+                <label>Telpas veids
+                  <select name="roomType" value={params.roomType} onChange={handleChange}>
+                    {Object.entries(ROOM_TYPES).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
+                  </select>
+                </label>
+                <label>Platība (m²)
+                  <input type="number" name="area" value={params.area} onChange={handleChange} />
+                </label>
+              </div>
             </div>
           </section>
-          {/* Simplified sections for brevity in this example update */}
-          <button onClick={handleCalculate} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '24px', fontSize: '1.4rem', fontWeight: 900, borderRadius: '12px', cursor: 'pointer', width: '100%', marginTop: '20px' }}>Sastādīt Tāmi</button>
+
+          <section className="calc-section">
+            <h2>📐 Telpas Ģeometrija</h2>
+            <div className="input-group-2">
+              <label>Griestu augstums (m)
+                <input type="number" name="height" value={params.height} onChange={handleChange} step="0.1" />
+              </label>
+              <label>Logu laukums (m²)
+                <input type="number" name="windowArea" value={params.windowArea} onChange={handleChange} step="0.1" />
+              </label>
+              <label>Iekšdurvju skaits
+                <input type="number" name="doorCount" value={params.doorCount} onChange={handleChange} />
+              </label>
+              <label>Elektrības punkti
+                <input type="number" name="elecPoints" value={params.elecPoints} onChange={handleChange} />
+              </label>
+            </div>
+          </section>
+
+          <section className="calc-section">
+            <h2>🧹 Demontāža un Atkritumi</h2>
+            <div className="input-group">
+              <label>Demontāžas apjoms
+                <select name="demolitionType" value={params.demolitionType} onChange={handleChange}>
+                  {Object.entries(PRICES.demolition).map(([k, v]) => (<option key={k} value={k}>{v.name}</option>))}
+                </select>
+              </label>
+              <label style={{ marginTop: '20px' }}>Būvgružu konteiners
+                <select name="containerSize" value={params.containerSize} onChange={handleChange}>
+                  {Object.entries(PRICES.container).map(([k, v]) => (<option key={k} value={k}>{v.name}</option>))}
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section className="calc-section">
+            <h2>🪵 Grīdu un Sienu Apdare</h2>
+            <div className="input-group">
+              <label>Grīdas sagatavošana
+                <select name="floorPrep" value={params.floorPrep} onChange={handleChange}>
+                  {Object.entries(PRICES.floor_prep).map(([k, v]) => (<option key={k} value={k}>{v.name}</option>))}
+                </select>
+              </label>
+              <label style={{ marginTop: '20px' }}>Grīdas segums
+                <select name="floorCover" value={params.floorCover} onChange={handleChange}>
+                  {Object.entries(PRICES.floor_cover).map(([k, v]) => (<option key={k} value={k}>{v.name}</option>))}
+                </select>
+              </label>
+              <label style={{ marginTop: '20px' }}>Sienu apdare
+                <select name="wallFinish" value={params.wallFinish} onChange={handleChange}>
+                  {Object.entries(PRICES.wall_finish).map(([k, v]) => (<option key={k} value={k}>{v.name}</option>))}
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <button onClick={handleCalculate} className="btn-primary" style={{ width: '100%', padding: '24px', fontSize: '1.2rem' }}>
+            Sastādīt Remonta Tāmi
+          </button>
         </div>
 
         <div className="calc-results-column">
           <div className="sticky-results">
-            {!results ? <div className="empty-state">📊 Norādiet telpas datus</div> : (
+            <h3 className="results-title">Remonta Specifikācija</h3>
+            
+            {!results ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">🛋️</div>
+                <p>Norādiet telpas izmērus un vēlmes</p>
+              </div>
+            ) : (
               <>
                 <div className="grand-total-box">
-                  <span className="gt-label">Kopējās Izmaksas</span>
+                  <span className="gt-label">{results.roomType} ({params.area} m²)</span>
                   <span className="gt-value">{results.grandTotal.toFixed(0)} €</span>
+                  <span className="gt-subtext">Aprēķinā iekļauti materiāli un darbs.</span>
                 </div>
-                <button onClick={getAiAdvice} disabled={isAiLoading} style={{ width: '100%', padding: '15px', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', border: '1px solid #2563eb', borderRadius: '12px', fontWeight: 800, cursor: 'pointer', marginTop: '20px' }}>
-                  {isAiLoading ? '🤖 ANALIZĒ...' : '✨ SINERĢĒT AR AI'}
-                </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '25px' }}>
+                  <button onClick={getAiAdvice} disabled={isAiLoading} className="btn-glass" style={{ borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}>
+                    {isAiLoading ? '🤖 ANALIZĒ...' : '✨ AI PADOMS'}
+                  </button>
+                  <button className="btn-glass">Eksportēt PDF</button>
+                </div>
+
                 {aiAdvice && (
-                  <div className="glass-card" style={{ marginTop: '15px', padding: '20px', background: 'rgba(15, 23, 42, 0.9)', borderColor: '#2563eb' }}>
-                    <div style={{ color: '#2563eb', fontWeight: 900, marginBottom: '10px' }}>🤖 AI PROJEKTU VADĪTĀJS</div>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{aiAdvice}</div>
+                  <div className="glass-card" style={{ marginTop: '25px', padding: '25px', background: 'rgba(15, 23, 42, 0.9)', borderColor: 'var(--accent-blue)' }}>
+                    <div style={{ color: 'var(--accent-blue)', fontWeight: 900, marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🤖</span> AI PROJEKTU VADĪTĀJS
+                    </div>
+                    <div style={{ color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{aiAdvice}</div>
                   </div>
                 )}
+
+                <table className="results-table" style={{ marginTop: '25px' }}>
+                  <thead>
+                    <tr>
+                      <th>Pozīcija</th>
+                      <th>Materiāli</th>
+                      <th>Darbs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Demontāža / Gruži</td><td>{results.demolitionCost.mat.toFixed(0)} €</td><td>{results.demolitionCost.work.toFixed(0)} €</td></tr>
+                    <tr><td>Grīdas darbi</td><td>{results.floorCost.mat.toFixed(0)} €</td><td>{results.floorCost.work.toFixed(0)} €</td></tr>
+                    <tr><td>Sienu apdare</td><td>{results.wallCost.mat.toFixed(0)} €</td><td>{results.wallCost.work.toFixed(0)} €</td></tr>
+                    <tr><td>Griestu darbi</td><td>{results.ceilingCost.mat.toFixed(0)} €</td><td>{results.ceilingCost.work.toFixed(0)} €</td></tr>
+                    <tr><td>Elektrība / Durvis</td><td>{results.extrasCost.mat.toFixed(0)} €</td><td>{results.extrasCost.work.toFixed(0)} €</td></tr>
+                  </tbody>
+                </table>
               </>
             )}
           </div>

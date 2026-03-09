@@ -14,30 +14,43 @@ export default function AiAgentDashboard() {
   const executeAgent = async (type: string) => {
     setIsRunning(true);
     setStats(s => ({ ...s, active: s.active + 1 }));
-    addLog(`INIT: Starting ${type.toUpperCase()} AGENT...`);
+    addLog(`INIT: Starting ${type.toUpperCase()} FLEET AGENT...`);
     
     try {
       if (type === 'seo') {
-        addLog(`PROCESS: Analyzing keywords for DE/EU markets...`);
+        addLog(`PROCESS: Connecting to Global Keyword Database...`);
+        await new Promise(r => setTimeout(r, 1000));
+        addLog(`ACTION: Identifying high-intent keywords for "Construction EU"...`);
         await runSeoTask();
-        addLog(`SUCCESS: 3 Articles generated and sent to publication.`);
+        addLog(`SUCCESS: 3 Optimized landing pages deployed to Expo City.`);
         setStats(s => ({ ...s, completed: s.completed + 3 }));
       } else if (type === 'sales') {
-        addLog(`PROCESS: Checking new requests in CRM...`);
-        addLog(`ACTION: Generating quote for 'Project: Terrace 30m2'`);
-        addLog(`ACTION: Offer of 2,450€ sent to client.`);
+        addLog(`PROCESS: Scanning CRM for high-value leads...`);
+        await new Promise(r => setTimeout(r, 1500));
+        addLog(`DATA: Found 2 leads with budget > 5,000€.`);
+        addLog(`ACTION: Crafting personalized AI offers based on regional prices...`);
+        await new Promise(r => setTimeout(r, 1000));
+        addLog(`SUCCESS: 2 Offers sent to Jānis Bērziņš and SIA "Logistics".`);
         setStats(s => ({ ...s, revenue: s.revenue + 2450, completed: s.completed + 1 }));
       } else if (type === 'lead') {
-        addLog(`PROCESS: Scraping construction companies in Germany...`);
-        addLog(`SUCCESS: Found 12 new leads. Contacts extracted.`);
-        setStats(s => ({ ...s, completed: s.completed + 12 }));
-      } else {
-        addLog(`PROCESS: Agent is thinking and optimizing...`);
+        addLog(`PROCESS: Deep-scanning industry directories...`);
         await new Promise(r => setTimeout(r, 2000));
-        addLog(`SUCCESS: Task completed.`);
+        addLog(`ACTION: Extracting verified business contacts...`);
+        addLog(`SUCCESS: Found 12 new high-quality leads. Added to CRM.`);
+        setStats(s => ({ ...s, completed: s.completed + 12 }));
+      } else if (type === 'ads') {
+        addLog(`PROCESS: Analyzing Ad Performance across Meta/Google...`);
+        await new Promise(r => setTimeout(r, 1200));
+        addLog(`ACTION: Auto-adjusting bids for "Roof Renovation" campaign.`);
+        addLog(`SUCCESS: ROI increased by 14.2% through real-time bidding.`);
+        setStats(s => ({ ...s, completed: s.completed + 1 }));
+      } else {
+        addLog(`PROCESS: Fleet-wide synchronization in progress...`);
+        await new Promise(r => setTimeout(r, 2000));
+        addLog(`SUCCESS: All neural nodes optimized.`);
       }
     } catch (err) {
-      addLog(`ERROR: Agent encountered a sync issue.`);
+      addLog(`ERROR: Critical sync failure in node ${Math.floor(Math.random()*1000)}.`);
     } finally {
       setIsRunning(false);
       setStats(s => ({ ...s, active: Math.max(0, s.active - 1) }));

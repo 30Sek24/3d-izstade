@@ -1,1 +1,137 @@
-body { background: black !important; color: white !important; }
+:root {
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-glow: rgba(59, 130, 246, 0.1);
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-emerald: #10b981;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+}
+
+body {
+  background: #020617;
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* GLASSMORPHISM CARD */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(59, 130, 246, 0.1);
+  transform: translateY(-4px);
+}
+
+/* GRADIENT TEXT */
+.text-gradient {
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-accent {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* BUTTONS */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-blue);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+/* RESPONSIVE SYSTEM */
+@media (max-width: 768px) {
+  .calculator-pro-wrapper {
+    padding: 20px 15px;
+  }
+
+  .calc-header h1 {
+    font-size: 2rem !important;
+  }
+
+  .calc-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .glass-card {
+    padding: 20px !important;
+  }
+
+  /* Marketplace / Hub Grid Fix */
+  div[style*="display: grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .btn-primary, .btn-glass {
+    width: 100%;
+    justify-content: center;
+  }
+
+  nav {
+    padding: 0 15px !important;
+    height: 60px !important;
+  }
+
+  nav a[style*="font-size: 1.5rem"] {
+    font-size: 1.2rem !important;
+  }
+
+  /* Hide Desktop Nav items on mobile for now (until we add burger) */
+  nav div[style*="display: flex"] a {
+    font-size: 0.65rem !important;
+    padding: 5px 8px !important;
+  }
+}
+
+/* ANIMATIONS */
+...
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
