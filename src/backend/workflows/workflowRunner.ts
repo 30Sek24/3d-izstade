@@ -1,9 +1,7 @@
 import { supabaseClient } from '../../lib/supabaseClient.js';
 import { logger } from '../logging/logger.js';
 import { agentCoordinator } from '../agents/engine/agentCoordinator.js';
-import { TaskNode } from '../agents/engine/agentTaskGraph.js';
-import { eventPublisher } from '../events/eventPublisher.js';
-import { PlatformEvent } from '../events/eventTypes.js';
+import type { TaskNode } from '../agents/engine/agentTaskGraph.js';
 
 export const workflowRunner = {
   /**

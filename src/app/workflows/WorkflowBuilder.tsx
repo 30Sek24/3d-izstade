@@ -20,8 +20,8 @@ const initialEdges = [
 ];
 
 export default function WorkflowBuilder() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes] = useState<any[]>(initialNodes);
+  const [edges] = useState<any[]>(initialEdges);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
 

@@ -1,4 +1,4 @@
-import { WorkflowDefinition, WorkflowNode } from './workflowDefinition.js';
+import type { WorkflowDefinition, WorkflowNode } from './workflowDefinition.js';
 import { logger } from '../logging/logger.js';
 
 export const workflowValidator = {
