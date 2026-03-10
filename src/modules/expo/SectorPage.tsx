@@ -23,8 +23,8 @@ export default function SectorPage() {
         
         setSector(currentSector);
         setCompanies(sectorCompanies);
-      } catch (e) {
-        console.error(e);
+      } catch (error) {
+        console.error("Sector data load error:", error);
       } finally {
         setLoading(false);
       }

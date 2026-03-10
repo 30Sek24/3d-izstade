@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
   PointerLockControls, 
@@ -16,6 +16,18 @@ import { useNavigate } from 'react-router-dom';
 let totalRevenue = 0;
 let itemsSoldStandard = 0;
 let itemsSoldCollector = 0;
+
+// Pre-generate random points outside of render to satisfy purity rules
+const COSMIC_COUNT = 50000;
+const COSMIC_POINTS = new Float32Array(COSMIC_COUNT * 3);
+for (let i = 0; i < COSMIC_COUNT; i++) {
+  const r = 40 + Math.random() * 20;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  COSMIC_POINTS[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  COSMIC_POINTS[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+  COSMIC_POINTS[i * 3 + 2] = r * Math.cos(phi);
+}
 
 function StaticTextLabel({ text, position, rotation = [0, 0, 0], color, size = 1, opacity = 1 }: any) {
   return (
@@ -177,20 +189,6 @@ function GalleryHUD() {
 }
 
 function CosmicNeonFlow() {
-  const count = 50000;
-  const points = useMemo(() => {
-    const p = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const r = 40 + Math.random() * 20;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      p[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      p[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      p[i * 3 + 2] = r * Math.cos(phi);
-    }
-    return p;
-  }, []);
-
   const pointsRef = useRef<THREE.Points>(null);
   useFrame((state) => {
     if (pointsRef.current) {
@@ -205,7 +203,7 @@ function CosmicNeonFlow() {
     <group position={[0, 40, -1000]}>
       <points ref={pointsRef}>
         <bufferGeometry>
-          <bufferAttribute args={[points, 3]} attach="attributes-position" count={count} array={points} itemSize={3} />
+          <bufferAttribute args={[COSMIC_POINTS, 3]} attach="attributes-position" count={COSMIC_COUNT} array={COSMIC_POINTS} itemSize={3} />
         </bufferGeometry>
         <pointsMaterial 
           size={0.4} 
@@ -312,15 +310,17 @@ function Player() {
 
   useFrame((state, delta) => {
     if (!mov.f && !mov.b && !mov.l && !mov.r) {
-      camera.position.setY(camera.position.y + Math.sin(state.clock.getElapsedTime() * 0.3) * 0.005);
-      camera.rotation.z += Math.cos(state.clock.getElapsedTime() * 0.2) * 0.0001;
+      const wobble = Math.sin(state.clock.getElapsedTime() * 0.3) * 0.005;
+      camera.position.setY(camera.position.y + wobble);
+      camera.rotation.set(camera.rotation.x, camera.rotation.y, camera.rotation.z + Math.cos(state.clock.getElapsedTime() * 0.2) * 0.0001);
     } else {
       if (mov.f) camera.translateZ(-speed * delta);
       if (mov.b) camera.translateZ(speed * delta);
       if (mov.l) camera.translateX(-speed * delta);
       if (mov.r) camera.translateX(speed * delta);
     }
-    camera.position.setY(THREE.MathUtils.lerp(camera.position.y, 1.7, 0.1)); 
+    const targetY = 1.7;
+    camera.position.setY(THREE.MathUtils.lerp(camera.position.y, targetY, 0.1)); 
   });
   return null;
 }

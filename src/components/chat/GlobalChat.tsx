@@ -9,16 +9,20 @@ export default function GlobalChat() {
   const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const loadMessages = async () => {
-    try {
-      const data = await expoService.getMessages();
-      setMessages(data);
-    } catch (e) { console.error(e); }
-  };
-
   useEffect(() => {
     if (isOpen) {
-      loadMessages();
+      // Async wrapper to avoid synchronous setState during render
+      const initChat = async () => {
+        try {
+          const data = await expoService.getMessages();
+          setMessages(data);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      
+      initChat();
+
       const sub = expoService.subscribeToChat((payload) => {
         setMessages(prev => [...prev, payload.new]);
       });

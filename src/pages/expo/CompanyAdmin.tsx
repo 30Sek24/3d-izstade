@@ -81,8 +81,8 @@ export default function CompanyAdmin() {
           const leadData = await expoService.getServiceRequests(first.id);
           if (leadData) setLeads(leadData);
         }
-      } catch (_e) {
-        console.warn("Datu ielādes kļūda (izmantojam noklusējuma datus):", _e);
+      } catch {
+        console.warn("Datu ielādes kļūda (izmantojam noklusējuma datus)");
       } finally {
         setLoading(false);
       }

@@ -17,6 +17,16 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../core/supabase';
 import { expoService } from '../../services/expoService';
 
+// --- STATIC DATA GENERATION (OUTSIDE RENDER) ---
+const SKYLINE_DATA = Array.from({ length: 40 }).map(() => {
+  const randomHSL = () => Math.random() * 0.1 + 0.6;
+  return {
+    pos: [(Math.random() - 0.5) * 800, 0, -(Math.random() * 500 + 300)] as [number, number, number],
+    scale: [10 + Math.random() * 20, 20 + Math.random() * 100, 10 + Math.random() * 20] as [number, number, number],
+    color: new THREE.Color().setHSL(randomHSL(), 0.5, 0.1)
+  };
+});
+
 // --- WEBCAM TEXTURE COMPONENT ---
 function WebcamScreen({ position, rotation }: any) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -70,6 +80,7 @@ function NavSign({ position, text, to }: { position: [number, number, number], t
 // --- DRONE ---
 function Drone({ startZ }: { startZ: number }) {
   const meshRef = useRef<THREE.Group>(null);
+  // Using stable state initializer function
   const [targetX] = useState(() => (Math.random() - 0.5) * 40);
   useFrame((state) => {
     if (meshRef.current) {
@@ -211,13 +222,8 @@ function DistrictBooth({ position, rotation, company, color }: any) {
 
 // --- CITY SKYLINE ---
 function Skyline() {
-  const buildings = React.useMemo(() => Array.from({ length: 40 }).map(() => ({
-    pos: [(Math.random() - 0.5) * 800, 0, -(Math.random() * 500 + 300)] as [number, number, number],
-    scale: [10 + Math.random() * 20, 20 + Math.random() * 100, 10 + Math.random() * 20] as [number, number, number],
-    color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.6, 0.5, 0.1)
-  })), []);
   return (
-    <group>{buildings.map((b, i) => <mesh key={i} position={b.pos}><boxGeometry args={b.scale} /><meshStandardMaterial color={b.color} /></mesh>)}</group>
+    <group>{SKYLINE_DATA.map((b, i) => <mesh key={i} position={b.pos}><boxGeometry args={b.scale} /><meshStandardMaterial color={b.color} /></mesh>)}</group>
   );
 }
 
