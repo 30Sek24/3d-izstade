@@ -6,6 +6,7 @@ import { salesRunner } from '../runners/salesRunner.js';
 import { agentScheduler } from '../../../../src/agents/system/scheduler/agentScheduler.js';
 import { supabaseClient } from '../../../lib/supabaseClient.js';
 import { agentExecutionLoop } from '../engine/agentExecutionLoop.js';
+import { agentGovernor } from '../../governance/agentGovernor.js';
 
 export const agentExecutor = {
   /**
@@ -28,6 +29,23 @@ export const agentExecutor = {
       }
 
       const role = agent.role.toLowerCase();
+      const description = taskData.action || taskData.brief || 'Perform autonomous operations';
+
+      // 2. Governance Check (Safety Layer)
+      const governanceStatus = await agentGovernor.evaluateAction({
+        taskId,
+        agentId,
+        projectId: taskData.project_id,
+        userId: taskData.user_id,
+        proposedAction: description,
+        depth: taskData.depth || 1
+      });
+
+      if (!governanceStatus.allowed) {
+        logger.warn('AgentExecutor', `Execution blocked by Governance Layer: ${governanceStatus.reason}`);
+        await agentScheduler.completeTask(taskId, { error: `Blocked by Governance: ${governanceStatus.reason}` }, 'failed');
+        return { status: 'failed', reason: governanceStatus.reason };
+      }
 
       // If the task specifically asks for legacy runner or simple completion, use runners
       // Otherwise, route to the new Autonomous Engine (Phase 5)
@@ -63,7 +81,6 @@ export const agentExecutor = {
       }
 
       // New Autonomous AI Agent Engine Flow
-      const description = taskData.action || taskData.brief || 'Perform autonomous operations';
       const result = await agentExecutionLoop.runAgent(taskId, agentId, role, description);
       return result;
 

@@ -64,8 +64,14 @@ export const taskQueue = {
       // Using Promise.allSettled to ensure one failing task doesn't stop others
       await Promise.allSettled(
         tasks.map(async (task) => {
+          // Merge database top-level fields into task_data for governance layer
+          const enrichedTaskData = {
+            ...task.task_data,
+            project_id: task.project_id
+          };
+          
           // Pass the task to the agent executor which routes to the proper runner
-          await agentExecutor.executeTask(task.id, task.agent_id, task.task_data);
+          await agentExecutor.executeTask(task.id, task.agent_id, enrichedTaskData);
         })
       );
 

@@ -10,6 +10,15 @@ export const workflowEngine = {
     try {
       console.log(`[WorkflowEngine] Starting business workflow for project: ${projectId}`);
 
+      // 0. Fetch Project to get user_id for governance
+      const { data: project } = await supabaseClient
+        .from('projects')
+        .select('user_id')
+        .eq('id', projectId)
+        .single();
+        
+      const userId = project?.user_id;
+
       // 1. Fetch all available system agents
       const { data: agents, error } = await supabaseClient
         .from('agents')
@@ -55,7 +64,9 @@ export const workflowEngine = {
             step_number: index + 1,
             workflow_type: 'business_kickoff',
             action: step.action,
-            brief: projectBrief
+            brief: projectBrief,
+            user_id: userId,
+            depth: 1
           }
         });
 
