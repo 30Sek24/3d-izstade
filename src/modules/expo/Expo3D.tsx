@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
   PointerLockControls, 
-  FlyControls,
+  OrbitControls,
   Text, 
   Html,
   Sky,
@@ -16,6 +16,7 @@ import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../core/supabase';
 import { expoService } from '../../services/expoService';
+import { useModelLoader } from './loaders/modelLoader';
 
 // --- STATIC DATA GENERATION (OUTSIDE RENDER) ---
 const SKYLINE_DATA = Array.from({ length: 40 }).map(() => {
@@ -174,10 +175,15 @@ function DistrictBooth({ position, rotation, company, color }: any) {
   const [isCalling, setIsCalling] = useState(false);
   const nav = useNavigate();
 
+  const modelUrl = company.booth?.model_url || company['3d_model_url'];
+  const { scene } = useModelLoader(modelUrl, '/models/default_booth.glb');
+
   return (
     <group position={position} rotation={rotation}>
       <mesh position={[0, 0.1, 0]} receiveShadow><boxGeometry args={[22, 0.2, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
-      <mesh position={[0, 8, -7.5]} castShadow><boxGeometry args={[22, 16, 1]} /><meshStandardMaterial color="#1e293b" /></mesh>
+      
+      <primitive object={scene.clone()} position={[0, 0.2, 0]} />
+
       <mesh position={[0, 16.5, -7]} castShadow><boxGeometry args={[22, 3, 1.2]} /><meshStandardMaterial color={color} /></mesh>
       <Text position={[0, 16.5, -6.3]} fontSize={1.5} color="#fff" fontWeight="black">{company.name.toUpperCase()}</Text>
       
@@ -269,7 +275,7 @@ function Player({ mode, onMove }: any) {
     }
   });
 
-  return mode === 'fly' ? <FlyControls movementSpeed={70} rollSpeed={0.5} dragToLook /> : <PointerLockControls />;
+  return mode === 'fly' ? <OrbitControls enablePan enableZoom enableRotate maxDistance={500} /> : <PointerLockControls />;
 }
 
 // --- MAIN ---
@@ -396,14 +402,15 @@ export default function Expo3D() {
         </>
       )}
 
-      <Canvas shadows gl={{ antialias: true, xr: { enabled: true } } as any} camera={{ fov: 60, position: [0, 2, 80] }}>
+      <Canvas shadows gl={{ antialias: true, xr: { enabled: true } } as any} camera={{ position: [0, 50, 100], fov: 60 }}>
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
             <color attach="background" args={['#020617']} />
             <Sky sunPosition={[100, 20, 100]} />
             <Environment preset="city" />
-            <ambientLight intensity={0.3} />
-            <directionalLight castShadow position={[100, 100, 50]} intensity={1.5} />
+            <ambientLight intensity={0.6} />
+            <directionalLight position={[10, 10, 10]} intensity={1.2} castShadow />
+            <hemisphereLight args={['#ffffff', '#444444', 0.5]} />
             <fog attach="fog" args={['#020617', 10, 800]} />
 
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, -500]} receiveShadow>
