@@ -94,17 +94,16 @@ const Layout: React.FC = () => {
       <GlobalChat />
 
       {/* SYSTEM STATUS BAR */}
-      <footer style={{ 
-        height: '30px', background: '#0f172a', borderTop: '1px solid #1e293b', 
-        display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '0.65rem', 
-        color: '#475569', position: 'fixed', bottom: 0, width: '100%', zIndex: 1000 
+      <footer style={{
+        height: '30px', background: '#0f172a', borderTop: '1px solid #1e293b',
+        display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '0.65rem',
+        color: '#94a3b8', position: 'fixed', bottom: 0, width: '100%', zIndex: 1000
       }}>
         <div style={{ display: 'flex', gap: '20px' }}>
-          <span>NODE: RTX_4080_ULTRA</span>
+          <span>MEZGLS: RTX_4080_ULTRA</span>
           <span style={{ color: '#10b981' }}>SYSTEM_SYNC: ACTIVE</span>
         </div>
-      </footer>
-    </div>
+      </footer>    </div>
   );
 };
 
