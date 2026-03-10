@@ -15,6 +15,8 @@ const PlatformLeads = lazy(() => import('./pages/LeadsPage'));
 const PlatformMarketplace = lazy(() => import('./pages/MarketplacePage'));
 const PlatformExpo = lazy(() => import('./pages/ExpoPage'));
 const Onboarding = lazy(() => import('./pages/onboarding/OnboardingPage'));
+const WorkflowBuilder = lazy(() => import('./app/workflows/WorkflowBuilder'));
+const Expo3DPage = lazy(() => import('./pages/Expo3DPage'));
 
 // Moduļu ielāde
 const Dashboard = lazy(() => import('./modules/dashboard/Dashboard'));
@@ -73,6 +75,7 @@ export default function App() {
             <Route path="platform/marketplace" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformMarketplace /></Suspense>} />
             <Route path="platform/expo" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformExpo /></Suspense>} />
             <Route path="onboarding" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><Onboarding /></Suspense>} />
+            <Route path="workflows" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><WorkflowBuilder /></Suspense>} />
 
             <Route path="dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
             <Route path="city-map" element={<Suspense fallback={null}><CityMap /></Suspense>} />
@@ -109,6 +112,7 @@ export default function App() {
           </Route>
           
           <Route path="/expo-3d" element={<Suspense fallback={null}><Expo3D /></Suspense>} />
+          <Route path="/expo3d" element={<Suspense fallback={null}><Expo3DPage /></Suspense>} />
           <Route path="/expo/booth/:id" element={<Suspense fallback={null}><BoothRoom /></Suspense>} />
           <Route path="/expo/showroom/:id" element={<Suspense fallback={null}><FurnitureShowroom /></Suspense>} />
           <Route path="/galerija" element={<Suspense fallback={null}><DigitalGallery /></Suspense>} />
