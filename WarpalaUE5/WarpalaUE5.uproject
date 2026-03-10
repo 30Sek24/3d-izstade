@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.4",
+	"Category": "",
+	"Description": "Warpala AI OS 3D Visualization",
+	"Modules": [
+		{
+			"Name": "WarpalaExpo",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "WarpalaCity",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "WarpalaNetworking",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "Http",
+			"Enabled": true
+		},
+		{
+			"Name": "Json",
+			"Enabled": true
+		}
+	]
+}
