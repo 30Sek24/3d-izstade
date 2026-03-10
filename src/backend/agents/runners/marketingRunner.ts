@@ -3,7 +3,7 @@ import { logger } from '../../logging/logger';
 import { agentScheduler } from '../../../agents/system/scheduler/agentScheduler';
 
 export const marketingRunner = {
-  async execute(taskId: string, agentId: string, taskData: any) {
+  async execute(taskId: string, _agentId: string, taskData: any) {
     try {
       logger.info('MarketingRunner', `Executing task ${taskId}`);
 

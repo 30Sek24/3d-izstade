@@ -1,4 +1,4 @@
-import { logger } from '../../logging/logger';
+import { logger } from '../logging/logger';
 
 export const websiteScraper = {
   /**
@@ -8,7 +8,6 @@ export const websiteScraper = {
     try {
       logger.info('WebsiteScraper', `Scraping URL: ${url}`);
       
-      // In production, integrate Puppeteer, Cheerio, or an API like Firecrawl.
       const simulatedContent = `Welcome to ${url}. This page contains product features, pricing, and company information.`;
 
       return { data: simulatedContent, error: null };

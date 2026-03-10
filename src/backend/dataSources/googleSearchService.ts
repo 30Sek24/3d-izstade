@@ -1,4 +1,4 @@
-import { logger } from '../../logging/logger';
+import { logger } from '../logging/logger';
 
 export const googleSearchService = {
   /**
@@ -7,9 +7,6 @@ export const googleSearchService = {
   async search(query: string, limit: number = 5) {
     try {
       logger.info('GoogleSearchService', `Performing search for: ${query}`);
-      
-      // In a production environment, this would integrate with Google Custom Search API or SerpApi.
-      // For now, returning mocked structure to satisfy the architecture.
       
       const results = Array.from({ length: limit }).map((_, i) => ({
         title: `Market Result ${i + 1} for ${query}`,

@@ -50,6 +50,7 @@ export const workflowEngine = {
         const taskResult = await agentScheduler.dispatchTask({
           agent_id: agentId,
           project_id: projectId,
+          status: 'pending',
           task_data: {
             step_number: index + 1,
             workflow_type: 'business_kickoff',

@@ -28,7 +28,7 @@ export const emailOutreach = {
   /**
    * Simulates sending an email (To be replaced with Resend, SendGrid, etc.)
    */
-  async sendEmail(to: string, subject: string, body: string) {
+  async sendEmail(to: string, subject: string, _body: string) {
     try {
       logger.info('EmailOutreach', `Simulating sending email to ${to} | Subject: ${subject}`);
       

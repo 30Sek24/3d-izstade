@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const LeadTable = ({ leads, onContact }: { leads: any[], onContact: (id: string) => void }) => {
   if (!leads || leads.length === 0) {
     return <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>No leads found. Generate some!</div>;

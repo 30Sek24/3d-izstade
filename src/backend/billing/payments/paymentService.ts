@@ -6,7 +6,7 @@ export const paymentService = {
   /**
    * Simulates creating a Stripe Checkout Session for a plan upgrade or credit pack
    */
-  async createCheckoutSession(userId: string, productId: string, type: 'plan' | 'credits') {
+  async createCheckoutSession(userId: string, productId: string, _type: 'plan' | 'credits') {
     try {
       logger.info('PaymentService', `Creating checkout session for user ${userId}, product: ${productId}`);
       

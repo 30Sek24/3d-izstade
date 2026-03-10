@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const MetricCard = ({ title, value, subtitle }: { title: string, value: string | number, subtitle?: string }) => (
   <div style={{
     background: 'rgba(255, 255, 255, 0.05)',

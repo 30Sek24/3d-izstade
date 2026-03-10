@@ -1,5 +1,5 @@
 // Simulated Express Middleware for architectural completion
-import { prodLogger } from '../logging/prodLogger';
+import { prodLogger } from '../../logging/prodLogger';
 
 const rateLimits = new Map<string, { count: number, resetAt: number }>();
 

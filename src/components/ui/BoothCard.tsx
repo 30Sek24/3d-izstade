@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const BoothCard = ({ booth, analytics }: { booth: any, analytics?: any }) => (
   <div style={{
     background: 'rgba(255, 255, 255, 0.03)',

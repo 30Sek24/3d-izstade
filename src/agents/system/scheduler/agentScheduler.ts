@@ -7,17 +7,20 @@ export interface AgentTask {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   task_data: Record<string, any>;
   result?: Record<string, any>;
+  scheduled_for?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const agentScheduler = {
   /**
    * Creates a new task for a specific agent.
    */
-  async dispatchTask(task: Omit<AgentTask, 'id' | 'status'>) {
+  async dispatchTask(task: Omit<AgentTask, 'id'>) {
     try {
       const { data, error } = await supabaseClient
         .from('agent_tasks')
-        .insert([{ ...task, status: 'pending' }])
+        .insert([{ ...task, status: task.status || 'pending' }])
         .select()
         .single();
 
@@ -50,7 +53,7 @@ export const agentScheduler = {
   /**
    * Updates task status and stores result.
    */
-  async completeTask(taskId: string, result: Record<string, any>, status: 'completed' | 'failed' = 'completed') {
+  async completeTask(taskId: string, result: Record<string, any>, status: AgentTask['status'] = 'completed') {
     try {
       const { data, error } = await supabaseClient
         .from('agent_tasks')
