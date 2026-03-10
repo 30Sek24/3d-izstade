@@ -312,7 +312,7 @@ function Player() {
 
   useFrame((state, delta) => {
     if (!mov.f && !mov.b && !mov.l && !mov.r) {
-      camera.position.y += Math.sin(state.clock.getElapsedTime() * 0.3) * 0.005;
+      camera.position.setY(camera.position.y + Math.sin(state.clock.getElapsedTime() * 0.3) * 0.005);
       camera.rotation.z += Math.cos(state.clock.getElapsedTime() * 0.2) * 0.0001;
     } else {
       if (mov.f) camera.translateZ(-speed * delta);
@@ -320,7 +320,7 @@ function Player() {
       if (mov.l) camera.translateX(-speed * delta);
       if (mov.r) camera.translateX(speed * delta);
     }
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, 1.7, 0.1); 
+    camera.position.setY(THREE.MathUtils.lerp(camera.position.y, 1.7, 0.1)); 
   });
   return null;
 }

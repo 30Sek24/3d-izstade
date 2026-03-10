@@ -7,7 +7,7 @@ export const securityMiddleware = {
   /**
    * Simple Rate Limiter to protect API and LLM endpoints
    */
-  rateLimiter(req: any, res: any, next: Function) {
+  rateLimiter(req: any, res: any, next: () => void) {
     const ip = req.ip || 'unknown';
     const now = Date.now();
     
@@ -36,8 +36,8 @@ export const securityMiddleware = {
   /**
    * Validates API keys and tokens before allowing access
    */
-  apiValidator(req: any, res: any, next: Function) {
-    const authHeader = req.headers.authorization;
+  apiValidator(_req: any, res: any, next: () => void) {
+    const authHeader = _req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       prodLogger.warn('Unauthorized API access attempt');
       return res.status(401).json({ error: 'Unauthorized' });

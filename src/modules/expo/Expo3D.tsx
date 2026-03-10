@@ -70,7 +70,7 @@ function NavSign({ position, text, to }: { position: [number, number, number], t
 // --- DRONE ---
 function Drone({ startZ }: { startZ: number }) {
   const meshRef = useRef<THREE.Group>(null);
-  const [targetX] = useState((Math.random() - 0.5) * 40);
+  const [targetX] = useState(() => (Math.random() - 0.5) * 40);
   useFrame((state) => {
     if (meshRef.current) {
       const time = state.clock.elapsedTime;
@@ -151,7 +151,7 @@ function SafeVideo({ url }: { url: string | null }) {
   try {
     const texture = useVideoTexture(url || defaultVideo, { crossOrigin: 'Anonymous', loop: true, muted: true });
     return <meshBasicMaterial map={texture} toneMapped={false} />;
-  } catch (e) {
+  } catch {
     return <meshStandardMaterial color="#111" />;
   }
 }
@@ -254,7 +254,7 @@ function Player({ mode, onMove }: any) {
       if (mov.b) { camera.translateZ(speed * delta); moved = true; }
       if (mov.l) { camera.translateX(-speed * delta); moved = true; }
       if (mov.r) { camera.translateX(speed * delta); moved = true; }
-      camera.position.y = 2;
+      camera.position.setY(2);
 
       if (moved && onMove && Date.now() - lastMoveTime.current > 200) {
         lastMoveTime.current = Date.now();

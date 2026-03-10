@@ -45,7 +45,7 @@ function Player() {
     if (mov.b) camera.translateZ(speed * delta);
     if (mov.l) camera.translateX(-speed * delta);
     if (mov.r) camera.translateX(speed * delta);
-    camera.position.y = 1.7;
+    camera.position.setY(1.7);
   });
   return null;
 }

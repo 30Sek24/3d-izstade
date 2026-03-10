@@ -9,6 +9,13 @@ export default function GlobalChat() {
   const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const loadMessages = async () => {
+    try {
+      const data = await expoService.getMessages();
+      setMessages(data);
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadMessages();
@@ -25,13 +32,6 @@ export default function GlobalChat() {
     }
   }, [messages]);
 
-  async function loadMessages() {
-    try {
-      const data = await expoService.getMessages();
-      setMessages(data);
-    } catch (e) { console.error(e); }
-  }
-
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim()) return;
@@ -47,7 +47,7 @@ export default function GlobalChat() {
       } else {
         setTimeout(() => expoService.sendMessage("Esmu saņēmis jūsu ziņu. Kā AI aģents es drīzumā sniegšu atbildi.", true), 1000);
       }
-    } catch (e) { console.error(e); }
+    } catch (err) { console.error(err); }
   }
 
   const toggleVoice = () => {
