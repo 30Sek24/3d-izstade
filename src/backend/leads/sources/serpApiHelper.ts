@@ -4,9 +4,7 @@ const getSerpApiKey = (): string => {
   if (typeof process !== 'undefined' && process.env && process.env.SERPAPI_KEY) {
     return process.env.SERPAPI_KEY;
   }
-  // @ts-ignore
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SERPAPI_KEY) {
-    // @ts-ignore
     return import.meta.env.VITE_SERPAPI_KEY;
   }
   return '';

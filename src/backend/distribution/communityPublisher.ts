@@ -29,11 +29,11 @@ export const communityPublisher = {
 
       let submissionId = '';
       if (url) {
-        // @ts-ignore
+        // @ts-expect-error
         const sub = await r.submitLink({ subredditName: subreddit, title, url });
         submissionId = sub.id;
       } else {
-        // @ts-ignore
+        // @ts-expect-error
         const sub = await r.submitSelfpost({ subredditName: subreddit, title, text: text || '' });
         submissionId = sub.id;
       }

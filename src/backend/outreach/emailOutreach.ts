@@ -8,9 +8,7 @@ const getEnv = (name: string): string => {
   if (typeof process !== 'undefined' && process.env && process.env[name]) {
     return process.env[name] as string;
   }
-  // @ts-ignore
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[`VITE_${name}`]) {
-    // @ts-ignore
     return import.meta.env[`VITE_${name}`];
   }
   return '';
