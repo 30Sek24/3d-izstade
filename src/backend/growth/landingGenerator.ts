@@ -1,6 +1,8 @@
 import { llmService } from '../ai/llmService.js';
 import { supabaseClient } from '../../lib/supabaseClient.js';
 import { logger } from '../logging/logger.js';
+import { eventPublisher } from '../events/eventPublisher.js';
+import { PlatformEvent } from '../events/eventTypes.js';
 
 export const landingGenerator = {
   /**
@@ -50,6 +52,10 @@ Ensure the HTML is semantic, uses modern classes, and includes a clear Call To A
       if (dbError) throw dbError;
 
       logger.info('LandingGenerator', `Landing page generated and saved with ID: ${data.id}`);
+      
+      // Publish event
+      await eventPublisher.publish(PlatformEvent.LANDING_CREATED, { landingPageId: data.id, projectId, niche });
+
       return { data, error: null };
     } catch (error) {
       logger.error('LandingGenerator', 'Failed to generate landing page', error);

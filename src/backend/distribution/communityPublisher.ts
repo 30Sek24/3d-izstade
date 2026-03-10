@@ -27,14 +27,18 @@ export const communityPublisher = {
         password: process.env.REDDIT_PASSWORD
       });
 
-      let submission;
+      let submissionId = '';
       if (url) {
-        submission = await r.getSubreddit(subreddit).submitLink({ title, url });
+        // @ts-ignore
+        const sub = await r.submitLink({ subredditName: subreddit, title, url });
+        submissionId = sub.id;
       } else {
-        submission = await r.getSubreddit(subreddit).submitSelfpost({ title, text: text || '' });
+        // @ts-ignore
+        const sub = await r.submitSelfpost({ subredditName: subreddit, title, text: text || '' });
+        submissionId = sub.id;
       }
 
-      return { success: true, id: submission.id };
+      return { success: true, id: submissionId };
     } catch (error) {
       logger.error('CommunityPublisher', `Failed to post to Reddit r/${subreddit}`, error);
       return { success: false, error: String(error) };

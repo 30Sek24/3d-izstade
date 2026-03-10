@@ -1,6 +1,8 @@
 import { logger } from '../../logging/logger';
 import { supabaseClient } from '../../../lib/supabaseClient';
 import { creditService } from '../credits/creditService';
+import { eventPublisher } from '../../events/eventPublisher.js';
+import { PlatformEvent } from '../../events/eventTypes.js';
 
 export const paymentService = {
   /**
@@ -34,6 +36,9 @@ export const paymentService = {
         .single();
 
       if (error) throw error;
+      
+      await eventPublisher.publish(PlatformEvent.SUBSCRIPTION_CREATED, { userId, plan: newPlan });
+      
       return { data, error: null };
     } catch (error) {
       logger.error('PaymentService', `Failed to upgrade plan for user ${userId}`, error);
@@ -53,6 +58,8 @@ export const paymentService = {
           const session = eventPayload.data.object;
           const userId = session.metadata.user_id;
           const productType = session.metadata.type; // 'plan' or 'credits'
+          
+          await eventPublisher.publish(PlatformEvent.PAYMENT_RECEIVED, { userId, amount: session.amount_total, productType });
           
           if (productType === 'plan') {
             await this.upgradePlan(userId, session.metadata.plan_name);
@@ -77,3 +84,4 @@ export const paymentService = {
     }
   }
 };
+

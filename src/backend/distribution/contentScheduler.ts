@@ -38,7 +38,6 @@ export const contentScheduler = {
       if (error) throw error;
 
       // 2. Add to Redis delayed queue
-      const delay = new Date(params.scheduledAt).getTime() - Date.now();
       await redis.zadd('scheduled_posts_queue', new Date(params.scheduledAt).getTime(), data.id);
 
       return { data, error: null };

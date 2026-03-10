@@ -45,7 +45,7 @@ export const serpApiHelper = {
   /**
    * Helper to guess/extract email from a domain if not provided
    */
-  guessEmail(domain?: string, companyName?: string): string {
+  guessEmail(domain?: string, _companyName?: string): string {
     if (!domain) return '';
     // Strip http/https/www
     const cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];

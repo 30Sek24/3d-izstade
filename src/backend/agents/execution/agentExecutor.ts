@@ -7,6 +7,8 @@ import { agentScheduler } from '../../../../src/agents/system/scheduler/agentSch
 import { supabaseClient } from '../../../lib/supabaseClient.js';
 import { agentExecutionLoop } from '../engine/agentExecutionLoop.js';
 import { agentGovernor } from '../../governance/agentGovernor.js';
+import { eventPublisher } from '../../events/eventPublisher.js';
+import { PlatformEvent } from '../../events/eventTypes.js';
 
 export const agentExecutor = {
   /**
@@ -31,6 +33,9 @@ export const agentExecutor = {
       const role = agent.role.toLowerCase();
       const description = taskData.action || taskData.brief || 'Perform autonomous operations';
 
+      // Publish task started
+      await eventPublisher.publish(PlatformEvent.AGENT_TASK_STARTED, { taskId, agentId, role, description });
+
       // 2. Governance Check (Safety Layer)
       const governanceStatus = await agentGovernor.evaluateAction({
         taskId,
@@ -44,16 +49,18 @@ export const agentExecutor = {
       if (!governanceStatus.allowed) {
         logger.warn('AgentExecutor', `Execution blocked by Governance Layer: ${governanceStatus.reason}`);
         await agentScheduler.completeTask(taskId, { error: `Blocked by Governance: ${governanceStatus.reason}` }, 'failed');
+        await eventPublisher.publish(PlatformEvent.AGENT_FAILED, { taskId, agentId, reason: governanceStatus.reason });
         return { status: 'failed', reason: governanceStatus.reason };
       }
 
       // If the task specifically asks for legacy runner or simple completion, use runners
       // Otherwise, route to the new Autonomous Engine (Phase 5)
 
+      let result = null;
+
       if (taskData.use_legacy_runner) {
         // Legacy flow
         await agentScheduler.completeTask(taskId, {}, 'processing');
-        let result = null;
         switch (role) {
           case 'seo':
           case 'seo_agent':
@@ -77,16 +84,19 @@ export const agentExecutor = {
             await agentScheduler.completeTask(taskId, result, 'completed');
             break;
         }
-        return result;
+      } else {
+        // New Autonomous AI Agent Engine Flow
+        result = await agentExecutionLoop.runAgent(taskId, agentId, role, description);
       }
 
-      // New Autonomous AI Agent Engine Flow
-      const result = await agentExecutionLoop.runAgent(taskId, agentId, role, description);
+      // Publish task completed
+      await eventPublisher.publish(PlatformEvent.AGENT_TASK_COMPLETED, { taskId, agentId, result });
       return result;
 
     } catch (err) {
       logger.error('AgentExecutor', `Execution failed for task ${taskId}`, err);
       await agentScheduler.completeTask(taskId, { error: String(err) }, 'failed');
+      await eventPublisher.publish(PlatformEvent.AGENT_FAILED, { taskId, agentId, error: String(err) });
       return null;
     }
   }

@@ -1,6 +1,7 @@
 import { logger } from '../../logging/logger.js';
 import { agentExecutionLoop } from './agentExecutionLoop.js';
-import { agentTaskGraph, TaskNode } from './agentTaskGraph.js';
+import { agentTaskGraph } from './agentTaskGraph.js';
+import type { TaskNode } from './agentTaskGraph.js';
 import { supabaseClient } from '../../../lib/supabaseClient.js';
 import { memoryService } from '../memoryService.js';
 
@@ -9,7 +10,7 @@ export const agentCoordinator = {
    * Orchestrates a multi-agent workflow using a directed acyclic graph (DAG) of tasks.
    * Agents share memory and trigger sequentially based on dependencies.
    */
-  async runCollaborativeWorkflow(projectId: string, overarchingGoal: string, nodes: TaskNode[]) {
+  async runCollaborativeWorkflow(projectId: string, _overarchingGoal: string, nodes: TaskNode[]) {
     try {
       logger.info('AgentCoordinator', `Starting collaborative workflow for project ${projectId}`);
       

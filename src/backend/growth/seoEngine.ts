@@ -1,5 +1,7 @@
 import { llmService } from '../ai/llmService.js';
 import { logger } from '../logging/logger.js';
+import { eventPublisher } from '../events/eventPublisher.js';
+import { PlatformEvent } from '../events/eventTypes.js';
 
 export const seoEngine = {
   /**
@@ -28,7 +30,7 @@ Format as JSON: { "clusters": [ { "pillar": "Name", "keywords": ["kw1", "kw2"] }
   /**
    * Generates a fully optimized SEO blog post.
    */
-  async generateBlogPost(topic: string, keywords: string[]) {
+  async generateBlogPost(projectId: string, topic: string, keywords: string[], userId?: string) {
     try {
       logger.info('SEOEngine', `Generating blog post for topic: ${topic}`);
 
@@ -38,6 +40,15 @@ Use Markdown formatting. Include a catchy H1, structured H2/H3 tags, and a stron
 
       const { text, error } = await llmService.generateText(prompt, { temperature: 0.6 });
       if (error) throw new Error(error);
+
+      const generatedUrl = `https://warpala.com/blog/${topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
+      await eventPublisher.publish(PlatformEvent.BLOG_PUBLISHED, { 
+        projectId, 
+        topic, 
+        url: generatedUrl,
+        userId 
+      });
 
       return { data: text, error: null };
     } catch (error) {

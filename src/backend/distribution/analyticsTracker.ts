@@ -1,5 +1,7 @@
 import { supabaseClient } from '../../lib/supabaseClient.js';
 import { logger } from '../logging/logger.js';
+import { eventPublisher } from '../events/eventPublisher.js';
+import { PlatformEvent } from '../events/eventTypes.js';
 
 /**
  * Tracks inbound traffic and conversions for marketing attribution.
@@ -30,6 +32,12 @@ export const analyticsTracker = {
         .single();
 
       if (error) throw error;
+      
+      await eventPublisher.publish(PlatformEvent.TRAFFIC_GENERATED, { 
+        landingPageId: params.landingPageId, 
+        source: params.source 
+      });
+
       return { data, error: null };
     } catch (error) {
       logger.error('AnalyticsTracker', 'Failed to track visit', error);

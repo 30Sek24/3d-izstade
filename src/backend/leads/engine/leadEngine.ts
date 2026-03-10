@@ -5,6 +5,8 @@ import { linkedinLeadSource } from '../sources/linkedinLeadSource.js';
 import { leadScoring } from '../leadScoring.js';
 import { supabaseClient } from '../../../lib/supabaseClient.js';
 import { agentScheduler } from '../../../agents/system/scheduler/agentScheduler.js';
+import { eventPublisher } from '../../events/eventPublisher.js';
+import { PlatformEvent } from '../../events/eventTypes.js';
 
 export const leadEngine = {
   /**
@@ -74,6 +76,8 @@ export const leadEngine = {
 
         if (!error && data) {
           storedLeads.push(data);
+          // Publish event
+          await eventPublisher.publish(PlatformEvent.LEAD_CREATED, { leadId: data.id, score, industry });
         } else if (error) {
           logger.warn('LeadEngine', `Failed to store lead: ${error.message}`);
         }

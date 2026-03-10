@@ -48,7 +48,7 @@ export const usageService = {
   async _incrementDailyCounter(userId: string, credits: number) {
     const today = new Date().toISOString().split('T')[0];
     try {
-      const { data, error } = await supabaseClient.rpc('increment_daily_usage', { 
+      const { error } = await supabaseClient.rpc('increment_daily_usage', { 
         target_user_id: userId, 
         usage_date: today,
         credit_amount: credits

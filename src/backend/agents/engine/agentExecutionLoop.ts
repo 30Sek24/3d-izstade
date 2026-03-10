@@ -1,6 +1,7 @@
 import { logger } from '../../logging/logger.js';
 import { agentTools } from './agentTools.js';
-import { agentPlanner, PlanStep } from './agentPlanner.js';
+import { agentPlanner } from './agentPlanner.js';
+import type { PlanStep } from './agentPlanner.js';
 import { memoryService } from '../memoryService.js';
 import { agentScheduler } from '../../../../src/agents/system/scheduler/agentScheduler.js';
 
