@@ -3,7 +3,7 @@ import { PlatformEvent } from '../../src/backend/events/eventTypes.js';
 import { logger } from '../../src/backend/logging/logger.js';
 import { paymentService } from '../../src/backend/billing/payments/paymentService.js';
 import { creditService } from '../../src/backend/billing/credits/creditService.js';
-import { supabaseClient } from '../../lib/supabaseClient.js';
+import { supabaseClient } from '../../src/lib/supabaseClient.js';
 
 /**
  * Handles revenue-specific events like payments and conversions.

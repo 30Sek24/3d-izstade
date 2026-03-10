@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start:backend": "cd backend-server && npm install && npm start",
-    "worker:start": "cd backend-server && npm install && tsx worker.ts"
+    "worker:start": "cd backend-server && npm run worker"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
