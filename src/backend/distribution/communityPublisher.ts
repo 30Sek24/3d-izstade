@@ -29,11 +29,11 @@ export const communityPublisher = {
 
       let submissionId = '';
       if (url) {
-        // @ts-expect-error
+        // @ts-expect-error - snoowrap types are cyclic here
         const sub = await r.submitLink({ subredditName: subreddit, title, url });
         submissionId = sub.id;
       } else {
-        // @ts-expect-error
+        // @ts-expect-error - snoowrap types are cyclic here
         const sub = await r.submitSelfpost({ subredditName: subreddit, title, text: text || '' });
         submissionId = sub.id;
       }
