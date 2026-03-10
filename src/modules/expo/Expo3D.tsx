@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../core/supabase';
 import { expoService } from '../../services/expoService';
-import { useModelLoader } from './loaders/modelLoader';
+import { useGLTF } from '@react-three/drei';
 
 // --- STATIC DATA GENERATION (OUTSIDE RENDER) ---
 const SKYLINE_DATA = Array.from({ length: 40 }).map(() => {
@@ -169,6 +169,12 @@ function SafeVideo({ url }: { url: string | null }) {
 }
 
 // --- PAVILJONS ---
+// Custom component to handle model loading safely
+function ValidBoothModel({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene.clone()} position={[0, 0.2, 0]} />;
+}
+
 function DistrictBooth({ position, rotation, company, color }: any) {
   const [hovered, setHovered] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -176,21 +182,14 @@ function DistrictBooth({ position, rotation, company, color }: any) {
   const nav = useNavigate();
 
   const modelUrl = company.booth?.model_url || company['3d_model_url'];
-  
-  // Custom component to handle model loading with a Suspense boundary
-  const BoothModel = ({ url }: { url: string }) => {
-    const { scene } = useModelLoader(url);
-    if (!scene) return <mesh position={[0, 8, -7.5]} castShadow><boxGeometry args={[22, 16, 1]} /><meshStandardMaterial color="#1e293b" /></mesh>;
-    return <primitive object={scene.clone()} position={[0, 0.2, 0]} />;
-  };
 
   return (
     <group position={position} rotation={rotation}>
       <mesh position={[0, 0.1, 0]} receiveShadow><boxGeometry args={[22, 0.2, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
       
       <Suspense fallback={<mesh position={[0, 8, -7.5]} castShadow><boxGeometry args={[22, 16, 1]} /><meshStandardMaterial color="#1e293b" /></mesh>}>
-        {modelUrl ? (
-          <BoothModel url={modelUrl} />
+        {modelUrl && modelUrl.endsWith('.glb') ? (
+          <ValidBoothModel url={modelUrl} />
         ) : (
           <mesh position={[0, 8, -7.5]} castShadow><boxGeometry args={[22, 16, 1]} /><meshStandardMaterial color="#1e293b" /></mesh>
         )}
