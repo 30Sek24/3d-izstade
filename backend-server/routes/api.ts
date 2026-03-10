@@ -26,8 +26,9 @@ router.use(authMiddleware);
 router.get('/dashboard', dashboardController.getDashboardData);
 
 // Leads
-router.get('/leads', leadsController.getLeads);
-router.post('/leads/generate', leadsController.generateLeads);
+router.get('/leads', authMiddleware, leadsController.getLeads);
+router.post('/leads/generate', authMiddleware, leadsController.generateLeads);
+router.post('/leads/capture', leadsController.captureLead); // Public endpoint for LPs
 
 // Agents
 router.post('/agents/run', agentsController.runAgentTask);

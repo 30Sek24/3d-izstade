@@ -1,13 +1,23 @@
 import dotenv from 'dotenv';
 import { taskQueue } from '../src/backend/queue/taskQueue.js';
 import { logger } from '../src/backend/logging/logger.js';
+import { contentScheduler } from '../src/backend/distribution/contentScheduler.js';
+import { emailScheduler } from '../src/backend/sequences/emailScheduler.js';
 
 dotenv.config();
 
 console.log('👷 AI Agent Worker starting...');
 
-// Start the polling mechanism for agent tasks
-taskQueue.startPolling(5000); // Poll every 5 seconds
+// 1. Start agent task polling
+taskQueue.startPolling(5000);
+
+// 2. Start content distribution polling
+setInterval(async () => {
+  await contentScheduler.runScheduledPosts();
+}, 60000); // Check for posts every minute
+
+// 3. Start email automation sequence engine
+emailScheduler.start(3600000); // Check for sequence follow-ups every hour
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {

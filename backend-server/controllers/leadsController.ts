@@ -56,3 +56,27 @@ export const generateLeads = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const captureLead = async (req: Request, res: Response) => {
+  const { email, page_id } = req.body;
+
+  if (!email || !page_id) {
+    return res.status(400).send('Email and Page ID are required.');
+  }
+
+  try {
+    const { leadCapture } = await import('../../src/backend/growth/leadCapture.js');
+    const result = await leadCapture.captureLead(email, page_id, {
+      ip: req.ip,
+      referrer: req.headers.referer
+    });
+
+    if (result.error) throw new Error(result.error);
+
+    // Redirect to a thank you page or back to the landing page with success
+    res.send('<h1>Success!</h1><p>You have been added to the list.</p>');
+  } catch (error: any) {
+    console.error('Lead Capture Error:', error);
+    res.status(500).send('An error occurred. Please try again later.');
+  }
+};

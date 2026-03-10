@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { router as apiRoutes } from './routes/api.js';
+import { landingRouter } from './routes/landing.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', apiRoutes);
+app.use('/lp', landingRouter);
 
 // Health check
 app.get('/health', (req, res) => {
