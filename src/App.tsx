@@ -14,6 +14,7 @@ const PlatformAgents = lazy(() => import('./pages/AgentsPage'));
 const PlatformLeads = lazy(() => import('./pages/LeadsPage'));
 const PlatformMarketplace = lazy(() => import('./pages/MarketplacePage'));
 const PlatformExpo = lazy(() => import('./pages/ExpoPage'));
+const Onboarding = lazy(() => import('./pages/onboarding/OnboardingPage'));
 
 // Moduļu ielāde
 const Dashboard = lazy(() => import('./modules/dashboard/Dashboard'));
@@ -71,6 +72,7 @@ export default function App() {
             <Route path="platform/leads" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformLeads /></Suspense>} />
             <Route path="platform/marketplace" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformMarketplace /></Suspense>} />
             <Route path="platform/expo" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformExpo /></Suspense>} />
+            <Route path="onboarding" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><Onboarding /></Suspense>} />
 
             <Route path="dashboard" element={<Suspense fallback={null}><Dashboard /></Suspense>} />
             <Route path="city-map" element={<Suspense fallback={null}><CityMap /></Suspense>} />

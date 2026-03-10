@@ -1,25 +1,27 @@
-import { logger } from '../../logging/logger';
-import { googleMapsLeadSource } from '../sources/googleMapsLeadSource';
-import { directoryLeadSource } from '../sources/directoryLeadSource';
-import { linkedinLeadSource } from '../sources/linkedinLeadSource';
-import { leadScoring } from '../leadScoring';
-import { supabaseClient } from '../../../lib/supabaseClient';
-import { agentScheduler } from '../../../agents/system/scheduler/agentScheduler';
+import { logger } from '../../logging/logger.js';
+import { googleMapsLeadSource } from '../sources/googleMapsLeadSource.js';
+import { directoryLeadSource } from '../sources/directoryLeadSource.js';
+import { linkedinLeadSource } from '../sources/linkedinLeadSource.js';
+import { leadScoring } from '../leadScoring.js';
+import { supabaseClient } from '../../../lib/supabaseClient.js';
+import { agentScheduler } from '../../../agents/system/scheduler/agentScheduler.js';
 
 export const leadEngine = {
   /**
-   * 1. Collect leads from multiple sources
+   * 1. Collect leads from multiple REAL sources
    */
-  async collectLeads(industry: string, location: string) {
+  async collectLeads(industry: string, location: string, limitPerSource: number = 5) {
     try {
-      logger.info('LeadEngine', `Collecting leads for ${industry} in ${location}`);
+      logger.info('LeadEngine', `Starting REAL lead collection for ${industry} in ${location}`);
       
-      // Parallel fetching from sources
-      const [maps, directory, linkedin] = await Promise.all([
-        googleMapsLeadSource.fetchLeads(industry, location),
-        directoryLeadSource.fetchLeads(industry, location),
-        linkedinLeadSource.fetchLeads(industry, location)
-      ]);
+      // Execute in sequence with a small delay to prevent immediate rate limit hits
+      const maps = await googleMapsLeadSource.fetchLeads(industry, location, limitPerSource);
+      await new Promise(r => setTimeout(r, 1000));
+      
+      const directory = await directoryLeadSource.fetchLeads(industry, location, limitPerSource);
+      await new Promise(r => setTimeout(r, 1000));
+      
+      const linkedin = await linkedinLeadSource.fetchLeads(industry, location, limitPerSource);
 
       const allLeads = [
         ...(maps.data || []),
@@ -27,6 +29,7 @@ export const leadEngine = {
         ...(linkedin.data || [])
       ];
 
+      logger.info('LeadEngine', `Total leads collected: ${allLeads.length}`);
       return { data: allLeads, error: null };
     } catch (error) {
       logger.error('LeadEngine', 'Failed to collect leads', error);
@@ -38,17 +41,18 @@ export const leadEngine = {
    * 2. Validate lead data format
    */
   validateLead(lead: any) {
+    // A real lead must at least have a name and some contact point
     if (!lead.company_name) return false;
-    if (!lead.email && !lead.phone) return false;
+    if (!lead.website && !lead.phone && !lead.email) return false;
     return true;
   },
 
   /**
    * 3. Process (Collect -> Validate -> Score -> Store)
    */
-  async processAndStoreLeads(industry: string, location: string) {
+  async processAndStoreLeads(industry: string, location: string, userId?: string) {
     try {
-      logger.info('LeadEngine', `Processing and storing leads for ${industry}`);
+      logger.info('LeadEngine', `Processing and storing REAL leads for ${industry}`);
       const collection = await this.collectLeads(industry, location);
       const leads = collection.data || [];
 
@@ -58,21 +62,24 @@ export const leadEngine = {
       for (const lead of validLeads) {
         const score = leadScoring.scoreLead(lead);
 
-        // Store in Supabase
+        // Store in Supabase using the backend client
         const { data, error } = await supabaseClient.from('leads').insert([{
-          source: 'LeadEngine',
+          source: lead.source || 'LeadEngine (SerpAPI)',
           contact_info: lead,
           status: 'new',
           score: score,
-          contacted: false
+          contacted: false,
+          user_id: userId || null
         }]).select().single();
 
         if (!error && data) {
           storedLeads.push(data);
+        } else if (error) {
+          logger.warn('LeadEngine', `Failed to store lead: ${error.message}`);
         }
       }
 
-      logger.info('LeadEngine', `Successfully stored ${storedLeads.length} valid leads`);
+      logger.info('LeadEngine', `Successfully processed ${storedLeads.length} valid leads`);
       return { data: storedLeads, error: null };
     } catch (error) {
       logger.error('LeadEngine', 'Failed to process leads', error);

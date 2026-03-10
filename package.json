@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:backend": "cd backend-server && npm install && npm start",
+    "worker:start": "cd backend-server && npm install && tsx worker.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

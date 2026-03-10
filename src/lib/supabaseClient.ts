@@ -1,15 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variable extraction with type safety and fallback
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Helper to get environment variables in both Vite and Node.js environments
+const getEnv = (name: string): string => {
+  if (typeof process !== 'undefined' && process.env && process.env[name]) {
+    return process.env[name] as string;
+  }
+  // @ts-ignore - Handle Vite environment variables
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[`VITE_${name}`]) {
+    // @ts-ignore
+    return import.meta.env[`VITE_${name}`];
+  }
+  return '';
+};
+
+const supabaseUrl = getEnv('SUPABASE_URL');
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
 
 // Create a safe, reusable client instance
 const createSafeClient = () => {
   try {
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('⚠️ SUPABASE CLIENT WARNING: Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.');
-      console.warn('⚠️ Supabase client initialized in dummy mode. Backend queries will fail safely.');
+      console.warn('⚠️ SUPABASE CLIENT WARNING: Missing SUPABASE_URL or SUPABASE_ANON_KEY.');
       // Fallback for development/UI work without throwing fatal application errors
       return createClient('https://dummy-fallback.supabase.co', 'dummy-key');
     }
@@ -22,14 +33,12 @@ const createSafeClient = () => {
     });
   } catch (error) {
     console.error('❌ FATAL: Failed to initialize Supabase client:', error);
-    // Return dummy client to prevent complete React tree crashing
     return createClient('https://dummy-fallback.supabase.co', 'dummy-key');
   }
 };
 
 export const supabaseClient = createSafeClient();
 
-// Utility for safe queries in backend services
 export const handleSupabaseError = (error: any, context: string) => {
   console.error(`[Supabase Error - ${context}]:`, error?.message || error);
   return { data: null, error: error?.message || 'Unknown database error' };

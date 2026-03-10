@@ -1,32 +1,41 @@
-import { logger } from '../../logging/logger';
+import { logger } from '../../logging/logger.js';
+import { serpApiHelper } from './serpApiHelper.js';
 
 export const googleMapsLeadSource = {
   /**
-   * Fetches leads from Google Maps based on query and location
+   * Fetches real leads from Google Maps using SerpAPI
    */
-  async fetchLeads(query: string, location: string) {
+  async fetchLeads(query: string, location: string, limit: number = 10) {
     try {
-      logger.info('GoogleMapsLeadSource', `Fetching leads for: ${query} in ${location}`);
+      logger.info('GoogleMapsLeadSource', `Fetching real leads for: ${query} in ${location}`);
       
-      // Simulated Google Maps API response
-      const results = [
-        {
-          company_name: `Local ${query} Experts`,
-          website: 'https://example.com/local-experts',
-          email: 'hello@localexperts.com',
-          phone: '+371 20000001',
-          location: location
-        },
-        {
-          company_name: `Pro ${query} ${location}`,
-          website: 'https://example.com/pro',
-          email: 'contact@pro.com',
-          phone: '+371 20000002',
-          location: location
-        }
-      ];
+      const response = await serpApiHelper.search({
+        engine: "google_maps",
+        q: `${query} in ${location}`,
+        type: "search"
+      });
 
-      return { data: results, error: null };
+      if (response.error || !response.data) {
+        throw new Error(response.error || 'No data received from SerpAPI');
+      }
+
+      const results = response.data.local_results || [];
+      
+      const leads = results.slice(0, limit).map((res: any) => ({
+        company_name: res.title,
+        website: res.website || '',
+        email: serpApiHelper.guessEmail(res.website, res.title),
+        phone: res.phone || '',
+        location: res.address || location,
+        metadata: {
+          rating: res.rating,
+          reviews: res.reviews,
+          type: res.type,
+          serpapi_id: res.place_id
+        }
+      }));
+
+      return { data: leads, error: null };
     } catch (error) {
       logger.error('GoogleMapsLeadSource', 'Failed to fetch leads', error);
       return { data: null, error: String(error) };

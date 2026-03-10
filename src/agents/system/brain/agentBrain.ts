@@ -1,44 +1,34 @@
-import { agentMemory } from '../memory/agentMemory';
-import { agentScheduler } from '../scheduler/agentScheduler';
+import { agentScheduler } from '../scheduler/agentScheduler.js';
+import { agentExecutionLoop } from '../../../backend/agents/engine/agentExecutionLoop.js';
+import { supabaseClient } from '../../../lib/supabaseClient.js';
 
 /**
  * The Brain acts as the core processor for any agent.
- * It reads tasks, processes them (simulated via tools), and writes results back.
+ * Now upgraded to use the multi-step Autonomous Execution Loop (Phase 5).
  */
 export const agentBrain = {
   /**
-   * Executes a single task. In a real scenario, this would call an LLM API.
+   * Executes a single task using the autonomous execution engine.
    */
   async processTask(taskId: string, agentId: string, taskData: Record<string, any>) {
     try {
-      console.log(`[AgentBrain] Agent ${agentId} is processing task ${taskId}...`);
+      console.log(`[AgentBrain] Agent ${agentId} is starting autonomous task ${taskId}...`);
       
-      // Mark as processing
-      await agentScheduler.completeTask(taskId, {}, 'processing');
+      // Fetch agent role for the engine
+      const { data: agent } = await supabaseClient
+        .from('agents')
+        .select('role')
+        .eq('id', agentId)
+        .single();
 
-      // 1. Recall past memory if needed
-      const memoryContext = await agentMemory.recall(agentId, 'recent_context');
+      const role = agent?.role || 'general_assistant';
+      const description = taskData.action || taskData.brief || 'Perform autonomous operations';
 
-      // 2. Simulate AI Processing Time
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Route to the real execution loop
+      return await agentExecutionLoop.runAgent(taskId, agentId, role, description);
 
-      // 3. Generate Mock Result (Will be replaced with real LLM calls later)
-      const result = {
-        action: taskData.action,
-        output: `Processed [${taskData.action}] successfully.`,
-        timestamp: new Date().toISOString(),
-        contextUsed: memoryContext.data
-      };
-
-      // 4. Update Memory
-      await agentMemory.remember(agentId, 'last_action', result.output);
-
-      // 5. Complete Task
-      const response = await agentScheduler.completeTask(taskId, result, 'completed');
-      
-      return response;
     } catch (error) {
-      console.error(`[AgentBrain] Error processing task ${taskId}:`, error);
+      console.error(`[AgentBrain] Fatal error in task ${taskId}:`, error);
       await agentScheduler.completeTask(taskId, { error: String(error) }, 'failed');
       return { data: null, error };
     }

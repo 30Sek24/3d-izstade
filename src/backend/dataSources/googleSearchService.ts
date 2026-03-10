@@ -1,17 +1,28 @@
-import { logger } from '../logging/logger';
+import { logger } from '../logging/logger.js';
+import { serpApiHelper } from '../leads/sources/serpApiHelper.js';
 
 export const googleSearchService = {
   /**
-   * Simulates or performs an actual Google search to gather market data
+   * Performs an actual Google search to gather market data using SerpAPI.
    */
   async search(query: string, limit: number = 5) {
     try {
-      logger.info('GoogleSearchService', `Performing search for: ${query}`);
+      logger.info('GoogleSearchService', `Performing REAL search for: ${query}`);
       
-      const results = Array.from({ length: limit }).map((_, i) => ({
-        title: `Market Result ${i + 1} for ${query}`,
-        url: `https://example.com/result-${i + 1}`,
-        snippet: `This is a simulated snippet containing valuable market data regarding ${query}.`,
+      const response = await serpApiHelper.search({
+        engine: "google",
+        q: query,
+        num: limit
+      });
+
+      if (response.error || !response.data) {
+        throw new Error(response.error || 'No data received from SerpAPI');
+      }
+
+      const results = (response.data.organic_results || []).map((res: any) => ({
+        title: res.title,
+        url: res.link,
+        snippet: res.snippet,
       }));
 
       return { data: results, error: null };

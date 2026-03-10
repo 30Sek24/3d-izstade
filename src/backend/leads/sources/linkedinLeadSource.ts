@@ -1,25 +1,37 @@
-import { logger } from '../../logging/logger';
+import { logger } from '../../logging/logger.js';
+import { serpApiHelper } from './serpApiHelper.js';
 
 export const linkedinLeadSource = {
   /**
-   * Fetches leads from LinkedIn based on job title, industry, and location
+   * Fetches real LinkedIn leads using SerpAPI (Google search targeted at LinkedIn)
    */
-  async fetchLeads(industry: string, location: string) {
+  async fetchLeads(industry: string, location: string, limit: number = 10) {
     try {
-      logger.info('LinkedinLeadSource', `Fetching LinkedIn leads for: ${industry} in ${location}`);
+      logger.info('LinkedinLeadSource', `Searching LinkedIn for: ${industry} in ${location}`);
       
-      // Simulated LinkedIn API/Scraping response
-      const results = [
-        {
-          company_name: `Enterprise ${industry} Inc`,
-          website: 'https://enterprise.inc',
-          email: 'ceo@enterprise.inc',
-          phone: '+371 20000004',
-          location: location
-        }
-      ];
+      // Target public LinkedIn company pages
+      const response = await serpApiHelper.search({
+        engine: "google",
+        q: `site:linkedin.com/company "${industry}" "${location}"`,
+        num: limit
+      });
 
-      return { data: results, error: null };
+      if (response.error || !response.data) {
+        throw new Error(response.error || 'No data received from SerpAPI');
+      }
+
+      const results = response.data.organic_results || [];
+      
+      const leads = results.map((res: any) => ({
+        company_name: res.title.replace(' | LinkedIn', '').split(':')[0],
+        website: res.link || '',
+        email: '', // Hard to guess from LinkedIn link without visiting
+        phone: '',
+        location: location,
+        source: 'LinkedIn (SerpAPI)'
+      }));
+
+      return { data: leads, error: null };
     } catch (error) {
       logger.error('LinkedinLeadSource', 'Failed to fetch leads', error);
       return { data: null, error: String(error) };
