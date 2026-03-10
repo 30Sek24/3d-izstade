@@ -8,10 +8,7 @@ export const paymentService = {
    */
   async createCheckoutSession(userId: string, productId: string, _type: 'plan' | 'credits') {
     try {
-      logger.info('PaymentService', `Creating checkout session for user ${userId}, product: ${productId}`);
-      
-      // In production, this calls Stripe API: stripe.checkout.sessions.create(...)
-      // We simulate returning a mock checkout URL
+      logger.info('PaymentService', `Creating checkout session for user ${userId}, product: ${productId} type: ${_type}`);
       
       const mockSessionUrl = `https://checkout.stripe.com/pay/cs_test_${Math.random().toString(36).substring(7)}`;
 
@@ -52,7 +49,7 @@ export const paymentService = {
       logger.info('PaymentService', 'Processing payment webhook', { eventType: eventPayload.type });
       
       switch (eventPayload.type) {
-        case 'checkout.session.completed':
+        case 'checkout.session.completed': {
           const session = eventPayload.data.object;
           const userId = session.metadata.user_id;
           const productType = session.metadata.type; // 'plan' or 'credits'
@@ -63,11 +60,12 @@ export const paymentService = {
             await creditService.addCredits(userId, parseInt(session.metadata.credit_amount));
           }
           break;
-        case 'invoice.payment_failed':
-          // Mark subscription as past_due
+        }
+        case 'invoice.payment_failed': {
           const customerId = eventPayload.data.object.customer;
           logger.warn('PaymentService', `Payment failed for customer ${customerId}`);
           break;
+        }
         default:
           logger.info('PaymentService', `Unhandled event type ${eventPayload.type}`);
       }

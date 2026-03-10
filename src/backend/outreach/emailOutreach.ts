@@ -30,7 +30,7 @@ export const emailOutreach = {
    */
   async sendEmail(to: string, subject: string, _body: string) {
     try {
-      logger.info('EmailOutreach', `Simulating sending email to ${to} | Subject: ${subject}`);
+      logger.info('EmailOutreach', `Simulating sending email to ${to} | Subject: ${subject} | Body length: ${_body.length}`);
       
       // Simulate network request
       await new Promise(resolve => setTimeout(resolve, 800));

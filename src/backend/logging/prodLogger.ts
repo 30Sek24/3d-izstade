@@ -6,7 +6,9 @@ export const prodLogger = {
   _logToFile(level: string, message: string, meta: any) {
     const logDir = path.resolve(process.cwd(), 'logs');
     if (!fs.existsSync(logDir)) {
-       try { fs.mkdirSync(logDir, { recursive: true }); } catch (e) {}
+       try { fs.mkdirSync(logDir, { recursive: true }); } catch (dirErr) {
+         console.error('Failed to create log directory', dirErr);
+       }
     }
 
     const timestamp = new Date().toISOString();
@@ -17,8 +19,8 @@ export const prodLogger = {
     
     try {
       fs.appendFileSync(path.join(logDir, fileName), logEntry);
-    } catch (e) {
-      console.error('Failed to write to log file', e);
+    } catch (fileErr) {
+      console.error('Failed to write to log file', fileErr);
     }
   },
 
