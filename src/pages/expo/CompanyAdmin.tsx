@@ -12,7 +12,7 @@ function SafeVideoPreview({ url }: { url: string | null }) {
   try {
     const texture = useVideoTexture(url || "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4", { crossOrigin: 'Anonymous', loop: true, muted: true });
     return <meshBasicMaterial map={texture} toneMapped={false} />;
-  } catch (_e) {
+  } catch {
     return <meshStandardMaterial color="#111" />;
   }
 }
