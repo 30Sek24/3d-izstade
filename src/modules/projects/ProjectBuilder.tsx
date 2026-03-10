@@ -38,7 +38,7 @@ export default function ProjectBuilder() {
       try {
         const data = await expoService.getMarketplaceServices();
         setMarketData(data || []);
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error("Market data load error:", e); }
     }
     loadMarketData();
   }, []);
@@ -77,7 +77,7 @@ export default function ProjectBuilder() {
       setRooms(simulatedRooms);
       setProjectTitle(`PROJEKTS: ${aiPrompt.toUpperCase()}`);
       setStep(3);
-    } catch (err) {
+    } catch {
       alert("AI Engine Error. Please try again.");
       setStep(1);
     } finally {

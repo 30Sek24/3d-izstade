@@ -49,7 +49,7 @@ export default function AiAgentDashboard() {
         await new Promise(r => setTimeout(r, 2000));
         addLog(`SUCCESS: All neural nodes optimized.`);
       }
-    } catch (err) {
+    } catch {
       addLog(`ERROR: Critical sync failure in node ${Math.floor(Math.random()*1000)}.`);
     } finally {
       setIsRunning(false);

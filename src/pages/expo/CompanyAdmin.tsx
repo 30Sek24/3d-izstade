@@ -12,7 +12,7 @@ function SafeVideoPreview({ url }: { url: string | null }) {
   try {
     const texture = useVideoTexture(url || "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4", { crossOrigin: 'Anonymous', loop: true, muted: true });
     return <meshBasicMaterial map={texture} toneMapped={false} />;
-  } catch (e) {
+  } catch (_e) {
     return <meshStandardMaterial color="#111" />;
   }
 }
@@ -81,8 +81,8 @@ export default function CompanyAdmin() {
           const leadData = await expoService.getServiceRequests(first.id);
           if (leadData) setLeads(leadData);
         }
-      } catch (e) {
-        console.warn("Datu ielādes kļūda (izmantojam noklusējuma datus):", e);
+      } catch (_e) {
+        console.warn("Datu ielādes kļūda (izmantojam noklusējuma datus):", _e);
       } finally {
         setLoading(false);
       }
@@ -98,7 +98,7 @@ export default function CompanyAdmin() {
     setLoading(true);
     try {
       setMessage({ type: 'success', text: 'Viss saglabāts sistēmā!' });
-    } catch (e: any) {
+    } catch {
       setMessage({ type: 'error', text: 'Kļūda saglabājot.' });
     } finally {
       setLoading(false);

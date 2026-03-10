@@ -31,8 +31,8 @@ export default function MarketingAutopilot() {
           }
           setIsLoading(false);
         }
-      } catch (e) {
-        setIsLoading(false);
+      } catch {
+        if (isMounted) setIsLoading(false);
       }
     };
     load();
@@ -59,7 +59,9 @@ export default function MarketingAutopilot() {
         .from('marketing_autopilot')
         .update({ is_active: !currentState, last_run_at: new Date().toISOString() })
         .eq('id', id);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Autopilot toggle error:", e); 
+    }
   };
 
   if (isLoading) return (

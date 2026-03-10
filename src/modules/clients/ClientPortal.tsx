@@ -18,7 +18,7 @@ export default function ClientPortal() {
     try {
       const { url } = await stripeService.createCheckoutSession(3950, 'Project Payment: ' + activeProject.name);
       window.open(url, '_blank');
-    } catch (e) {
+    } catch {
       alert("Maksājuma kļūda. Lūdzu, mēģiniet vēlreiz.");
     } finally {
       setIsPaying(false);

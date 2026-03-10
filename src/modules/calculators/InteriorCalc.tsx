@@ -107,7 +107,7 @@ export default function InteriorCalc() {
         temperature: 0.7
       });
       setAiAnalysis(response.choices[0].message.content);
-    } catch (err) {
+    } catch {
       setAiAnalysis("AI mezgls pašlaik nav sasniedzams.");
     } finally {
       setIsAiLoading(false);
@@ -129,7 +129,7 @@ export default function InteriorCalc() {
     const skirtingRate = PRICES.floor_skirting[params.floorSkirting as keyof typeof PRICES.floor_skirting];
     const floorCost = {
       mat: ((params.area * floorPrepRate.mat) + (params.area * floorCoverRate.mat) + (perimeter * skirtingRate.mat)) * matMult,
-      work: ((params.area * floorPrepRate.work) + (params.area * floorCoverRate.work) + (perimeter * skirtingRate.work)) * workMult,
+      work: ((params.area * floorPrepRate.work) + (params.area * floorCoverRate.mat) + (perimeter * skirtingRate.work)) * workMult,
     };
 
     const wallPrepRate = PRICES.wall_prep[params.wallPrep as keyof typeof PRICES.wall_prep];
@@ -260,7 +260,7 @@ export default function InteriorCalc() {
                   <span className="gt-subtext">Aprēķinā iekļauti materiāli un darbs.</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '25px' }}>
+                <div style={{ gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '25px', display: 'grid' }}>
                   <button onClick={getAiAdvice} disabled={isAiLoading} className="btn-glass" style={{ borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)' }}>
                     {isAiLoading ? '🤖 ANALIZĒ...' : '✨ AI PADOMS'}
                   </button>

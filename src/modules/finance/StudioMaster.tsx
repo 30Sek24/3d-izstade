@@ -14,7 +14,7 @@ export default function StudioMaster() {
     try {
       const result = await generateAiVideo(prompt, style);
       setVideoUrl(result.videoUrl);
-    } catch (e) {
+    } catch {
       alert("Video ģenerēšanas kļūda");
     } finally {
       setIsGenerating(false);
