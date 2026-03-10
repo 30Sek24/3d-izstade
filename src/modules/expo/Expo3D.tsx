@@ -160,12 +160,8 @@ function Guests({ guests }: { guests: any[] }) {
 // --- VIDEO EKRĀNS ---
 function SafeVideo({ url }: { url: string | null }) {
   const defaultVideo = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4";
-  try {
-    const texture = useVideoTexture(url || defaultVideo, { crossOrigin: 'Anonymous', loop: true, muted: true });
-    return <meshBasicMaterial map={texture} toneMapped={false} />;
-  } catch {
-    return <meshStandardMaterial color="#111" />;
-  }
+  const texture = useVideoTexture(url || defaultVideo, { crossOrigin: 'Anonymous', loop: true, muted: true });
+  return <meshBasicMaterial map={texture} toneMapped={false} />;
 }
 
 // --- PAVILJONS ---
@@ -289,6 +285,17 @@ function Player({ mode, onMove }: any) {
   return mode === 'fly' ? <OrbitControls enablePan enableZoom enableRotate maxDistance={500} /> : <PointerLockControls />;
 }
 
+// --- FALLBACK DATA ---
+const FALLBACK_SECTORS = [
+  { id: "1", name: "Construction", color_theme: "#3b82f6", map_position: { x: 0, y: 0, z: -100 } },
+  { id: "2", name: "Technology", color_theme: "#10b981", map_position: { x: 0, y: 0, z: -300 } }
+];
+
+const FALLBACK_COMPANIES = [
+  { id: "c1", name: "BuildMaster SIA", sector_id: "1", website: "https://warpala.com", booth: {} },
+  { id: "c2", name: "TechCorp Global", sector_id: "2", website: "https://warpala.com", booth: {} }
+];
+
 // --- MAIN ---
 export default function Expo3D() {
   const [mode, setMode] = useState<'menu' | 'walk' | 'fly'>('menu');
@@ -305,8 +312,18 @@ export default function Expo3D() {
     async function loadData() {
       try {
         const [sectors, companies] = await Promise.all([expoService.getSectors(), expoService.getCompaniesWithBooths()]);
+        
+        if (!sectors || sectors.length === 0) {
+          throw new Error("No sectors found");
+        }
+        
         setData({ sectors, companies });
-      } catch (e) { console.error(e); } finally { setIsLoading(false); }
+      } catch (e) { 
+        console.error("Using fallback data due to error:", e);
+        setData({ sectors: FALLBACK_SECTORS, companies: FALLBACK_COMPANIES });
+      } finally { 
+        setIsLoading(false); 
+      }
     }
     loadData();
   }, []);
@@ -413,7 +430,7 @@ export default function Expo3D() {
         </>
       )}
 
-      <Canvas shadows gl={{ antialias: true, xr: { enabled: true } } as any} camera={{ position: [0, 50, 100], fov: 60 }}>
+      <Canvas shadows gl={{ antialias: true }} camera={{ position: [0, 50, 100], fov: 60 }}>
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
             <color attach="background" args={['#020617']} />

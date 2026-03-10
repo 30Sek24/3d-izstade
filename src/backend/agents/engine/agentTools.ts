@@ -1,6 +1,10 @@
 import { logger } from '../../logging/logger.js';
 import { serpApiHelper } from '../../leads/sources/serpApiHelper.js';
 import { websiteScraper } from '../../dataSources/websiteScraper.js';
+import { businessGenerator } from '../../business/businessGenerator.js';
+import { leadEngine } from '../../leads/engine/leadEngine.js';
+import { salesSequence } from '../../revenue/salesSequence.js';
+import { offerGenerator } from '../../revenue/offerGenerator.js';
 
 export interface AgentTool {
   name: string;
@@ -11,7 +15,7 @@ export interface AgentTool {
 export const agentTools: Record<string, AgentTool> = {
   search_web: {
     name: 'search_web',
-    description: 'Searches the web for information using SerpAPI. Arguments: { "query": "search query" }',
+    description: 'Searches the web using SerpAPI. Arguments: { "query": "search term" }',
     execute: async (args: { query: string }) => {
       logger.info('AgentTools', `Executing search_web for: ${args.query}`);
       const result = await serpApiHelper.search({ q: args.query, engine: 'google' });
@@ -20,18 +24,53 @@ export const agentTools: Record<string, AgentTool> = {
   },
   scrape_website: {
     name: 'scrape_website',
-    description: 'Scrapes text content from a provided URL. Arguments: { "url": "https://..." }',
+    description: 'Scrapes text content from a URL. Arguments: { "url": "https://..." }',
     execute: async (args: { url: string }) => {
       logger.info('AgentTools', `Executing scrape_website for: ${args.url}`);
       const result = await websiteScraper.scrapeText(args.url);
       return result.data || 'Failed to scrape website.';
     }
   },
+  create_business: {
+    name: 'create_business',
+    description: 'Generates a new business project. Arguments: { "niche": "Target niche" }',
+    execute: async (args: { niche: string }) => {
+      logger.info('AgentTools', `Executing create_business for: ${args.niche}`);
+      const result = await businessGenerator.launchBusinessWorkflow(args.niche);
+      return result.data || 'Failed to create business.';
+    }
+  },
+  find_leads: {
+    name: 'find_leads',
+    description: 'Scrapes and scores leads. Arguments: { "industry": "Industry", "location": "City/Country" }',
+    execute: async (args: { industry: string, location: string }) => {
+      logger.info('AgentTools', `Executing find_leads for: ${args.industry} in ${args.location}`);
+      const result = await leadEngine.processAndStoreLeads(args.industry, args.location);
+      return result.data || 'Failed to find leads.';
+    }
+  },
+  generate_offer: {
+    name: 'generate_offer',
+    description: 'Analyzes a prospect website and creates an offer. Arguments: { "prospectId": "uuid", "offerType": "ai_website" }',
+    execute: async (args: { prospectId: string, offerType: any }) => {
+      logger.info('AgentTools', `Executing generate_offer for prospect: ${args.prospectId}`);
+      const result = await offerGenerator.generateOffer(args.prospectId, args.offerType);
+      return result.data || 'Failed to generate offer.';
+    }
+  },
+  contact_lead: {
+    name: 'contact_lead',
+    description: 'Starts an outreach email sequence for a prospect. Arguments: { "prospectId": "uuid", "offerId": "uuid" }',
+    execute: async (args: { prospectId: string, offerId: string }) => {
+      logger.info('AgentTools', `Executing contact_lead for prospect: ${args.prospectId}`);
+      const result = await salesSequence.startOutreach(args.prospectId, args.offerId);
+      return result || 'Failed to contact lead.';
+    }
+  },
   save_to_memory: {
     name: 'save_to_memory',
-    description: 'Saves important extracted information to long-term memory. Arguments: { "context": "Data to remember" }',
+    description: 'Saves extracted information. Arguments: { "context": "Data to remember" }',
     execute: async (args: { context: string }) => {
-      // Memory saving is handled at the loop level, this tool just passes the context back
       logger.info('AgentTools', `Executing save_to_memory`);
       return { success: true, saved_context: args.context };
     }
