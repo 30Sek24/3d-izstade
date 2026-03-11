@@ -430,7 +430,18 @@ export default function Expo3D() {
         </>
       )}
 
-      <Canvas shadows gl={{ antialias: true }} camera={{ position: [0, 50, 100], fov: 60 }}>
+      <Canvas 
+        shadows 
+        gl={{ antialias: true }} 
+        camera={{ position: [0, 50, 100], fov: 60 }}
+        onCreated={({ gl }) => {
+          // HOTFIX: Three.js r180+ removed getEnvironmentBlendMode, but older @react-three/drei versions still call it.
+          // This patches the specific renderer instance to prevent the crash in Environment and MeshReflectorMaterial.
+          if (gl.xr && typeof (gl.xr as any).getEnvironmentBlendMode !== 'function') {
+            (gl.xr as any).getEnvironmentBlendMode = () => 'opaque';
+          }
+        }}
+      >
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
             <color attach="background" args={['#020617']} />
