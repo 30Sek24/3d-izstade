@@ -14,6 +14,11 @@ const PlatformAgents = lazy(() => import('./pages/AgentsPage'));
 const PlatformLeads = lazy(() => import('./pages/LeadsPage'));
 const PlatformMarketplace = lazy(() => import('./pages/MarketplacePage'));
 const PlatformExpo = lazy(() => import('./pages/ExpoPage'));
+const AiPlatformPrototype = lazy(() => import('./pages/AiPlatformPrototype'));
+const AutonomousEngine = lazy(() => import('./pages/AutonomousEngine'));
+const BusinessEconomy = lazy(() => import('./pages/BusinessEconomy'));
+const AutonomousBusinessManager = lazy(() => import('./pages/AutonomousBusinessManager'));
+const EconomySimulatorPage = lazy(() => import('./pages/EconomySimulatorPage'));
 const Onboarding = lazy(() => import('./pages/onboarding/OnboardingPage'));
 const WorkflowBuilder = lazy(() => import('./app/workflows/WorkflowBuilder'));
 const Expo3DPage = lazy(() => import('./pages/Expo3DPage'));
@@ -69,6 +74,11 @@ export default function App() {
             <Route path="login" element={<Login />} />
             
             {/* Jaunie AI Platformas Maršruti (Phase 15) */}
+            <Route path="economy-simulator" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><EconomySimulatorPage /></Suspense>} />
+            <Route path="business-fleet" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><AutonomousBusinessManager /></Suspense>} />
+            <Route path="business-economy" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><BusinessEconomy /></Suspense>} />
+            <Route path="autonomous-engine" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><AutonomousEngine /></Suspense>} />
+            <Route path="prototype" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><AiPlatformPrototype /></Suspense>} />
             <Route path="platform/dashboard" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformDashboard /></Suspense>} />
             <Route path="platform/agents" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformAgents /></Suspense>} />
             <Route path="platform/leads" element={<Suspense fallback={<div style={{ color: 'white', padding: '50px' }}>Loading...</div>}><PlatformLeads /></Suspense>} />

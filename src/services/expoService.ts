@@ -112,5 +112,68 @@ export const expoService = {
     
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * REĢISTRĒ AI ĢENERĒTU BIZNESU EXPO PILSĒTĀ
+   */
+  async registerAiBusiness(businessData: { 
+    name: string; 
+    description: string; 
+    category: string;
+    products: any[];
+    campaign: any;
+  }) {
+    try {
+      // 1. Noteikt kategoriju priekš 3D interjera
+      const niche = businessData.category.toLowerCase();
+      let internalCategory = 'tech';
+      if (niche.includes('build') || niche.includes('construction') || niche.includes('eco')) internalCategory = 'building';
+      if (niche.includes('design') || niche.includes('art') || niche.includes('furniture')) internalCategory = 'design';
+      if (niche.includes('sos') || niche.includes('emergency') || niche.includes('repair')) internalCategory = 'emergency';
+
+      // 2. Atrodam atbilstošo sektoru
+      const { data: sectors } = await this.getSectors();
+      const sector = sectors?.find(s => 
+        niche.includes(s.name.toLowerCase()) ||
+        s.name.toLowerCase().includes(niche)
+      ) || sectors?.find(s => s.name === 'Tech Zone');
+
+      // 3. Izveidojam uzņēmuma profilu
+      const { data: company, error: compError } = await supabase
+        .from('companies')
+        .insert([{
+          name: businessData.name,
+          description: businessData.description,
+          sector_id: sector?.id,
+          tier: 'pro',
+          location: 'AI District, Warpala City',
+          is_active: true,
+          contact_email: `contact@${businessData.name.toLowerCase().replace(/\s+/g, '')}.ai`
+        }])
+        .select()
+        .single();
+
+      if (compError) throw compError;
+
+      // 4. Izveidojam stendu (Booth)
+      const { error: boothError } = await supabase
+        .from('booths')
+        .insert([{
+          company_id: company.id,
+          video_url: 'https://vjs.zencdn.net/v/oceans.mp4',
+          products: businessData.products,
+          services: businessData.campaign.assets,
+          // Šeit mēs saglabājam kategoriju priekš BoothRoom.tsx
+          images: [internalCategory] // Pagaidām izmantojam pirmo bildi kā kategorijas identifikatoru vai pievienojam jaunu kolonnu nākotnē
+        }]);
+
+      if (boothError) throw boothError;
+
+      return { success: true, companyId: company.id };
+    } catch (error) {
+      console.error('Failed to register AI business in Expo:', error);
+      return { success: false, error };
+    }
   }
 };

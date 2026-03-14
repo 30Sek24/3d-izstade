@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import '../../components/calculator/styles/CalculatorPro.css';
 import { COUNTRIES, renderCountryOptions } from '../../core/constants';
-import OpenAI from 'openai';
+import { generateAiResponse } from '../../services/aiService';
 
 // ------------------------------------------------------------------
 // DATUBĀZE: Cenas un materiāli (Bāzes likmes EUR Rīgai/Standartam)
@@ -88,7 +88,6 @@ export default function InteriorCalc() {
     if (!results) return;
     setIsAiLoading(true);
     try {
-      const openai = new OpenAI({ apiKey: import.meta.env.VITE_OPENAI_API_KEY, dangerouslyAllowBrowser: true });
       const prompt = `Analizē šo iekšējās apdares tāmi:
       Telpa: ${results.roomType}
       Platība: ${params.area} m2
@@ -101,12 +100,8 @@ export default function InteriorCalc() {
       3. Kas jāņem vērā pirms darbu uzsākšanas.
       Atbildi latviski, profesionāli.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
-      });
-      setAiAnalysis(response.choices[0].message.content);
+      const responseText = await generateAiResponse(prompt);
+      setAiAnalysis(responseText);
     } catch {
       setAiAnalysis("AI mezgls pašlaik nav sasniedzams.");
     } finally {

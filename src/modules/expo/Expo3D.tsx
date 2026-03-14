@@ -46,7 +46,13 @@ function WebcamScreen({ position, rotation }: any) {
         videoRef.current = video;
         setTexture(new THREE.VideoTexture(video));
       })
-      .catch(err => console.error("Webcam error:", err));
+      .catch(err => {
+        if (err.name === 'NotFoundError') {
+          console.warn("Webcam not found, proceeding without video feed.");
+        } else {
+          console.error("Webcam error:", err);
+        }
+      });
 
     return () => {
       if (videoRef.current) {
@@ -159,8 +165,8 @@ function Guests({ guests }: { guests: any[] }) {
 
 // --- VIDEO EKRĀNS ---
 function SafeVideo({ url }: { url: string | null }) {
-  const defaultVideo = "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4";
-  const texture = useVideoTexture(url || defaultVideo, { crossOrigin: 'Anonymous', loop: true, muted: true });
+  const defaultVideo = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  const texture = useVideoTexture(url || defaultVideo, { crossOrigin: 'anonymous', loop: true, muted: true });
   return <meshBasicMaterial map={texture} toneMapped={false} />;
 }
 
@@ -381,6 +387,8 @@ export default function Expo3D() {
   };
 
   const crowd = React.useMemo(() => Array.from({ length: 30 }).map((_, i) => <Person key={i} startPos={[(Math.random() - 0.5) * 20, 1, -(Math.random() * 800)]} speed={-(3 + Math.random() * 6)} color={new THREE.Color().setHSL(Math.random(), 0.7, 0.5)} />), []);
+  const drones = React.useMemo(() => Array.from({ length: 5 }).map((_, i) => <Drone key={i} startZ={i * -150} />), []);
+  const neonPoles = React.useMemo(() => [-1, 1].map(side => Array.from({ length: 10 }).map((_, i) => <NeonPole key={`${side}-${i}`} position={[side * 15, 0, i * -80 + 40]} />)), []);
 
   if (isLoading) return <Loader />;
 
@@ -461,13 +469,13 @@ export default function Expo3D() {
 
             {crowd}
             <Skyline />
-            {Array.from({ length: 5 }).map((_, i) => <Drone key={i} startZ={i * -150} />)}
-            {[-1, 1].map(side => Array.from({ length: 10 }).map((_, i) => <NeonPole key={`${side}-${i}`} position={[side * 15, 0, i * -80 + 40]} />))}
+            {drones}
+            {neonPoles}
             
             <NavSign position={[-30, 5, 40]} text="← 2D CITY MAP" to="/city-map" />
             <NavSign position={[30, 5, 40]} text="GLOBAL MARKET →" to="/marketplace" />
 
-            <WebcamScreen position={[0, 15, 55]} rotation={[0, 0, 0]} />
+            {/* <WebcamScreen position={[0, 15, 55]} rotation={[0, 0, 0]} /> */}
             <Guests guests={guests} />
 
             {data.sectors.map((s: any) => (

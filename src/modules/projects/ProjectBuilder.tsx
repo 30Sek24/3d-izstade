@@ -161,9 +161,9 @@ export default function ProjectBuilder() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {room.materials.map(m => (
                       <div key={m.id} style={{ display: 'flex', gap: '10px' }}>
-                        <input value={m.name} style={{ flex: 3 }} readOnly />
-                        <input type="number" value={m.qty} style={{ flex: 1 }} readOnly />
-                        <input type="number" value={m.price} style={{ flex: 1.5 }} readOnly />
+                        <input value={m.name || ''} style={{ flex: 3 }} readOnly />
+                        <input type="number" value={m.qty || 0} style={{ flex: 1 }} readOnly />
+                        <input type="number" value={m.price || 0} style={{ flex: 1.5 }} readOnly />
                       </div>
                     ))}
                   </div>

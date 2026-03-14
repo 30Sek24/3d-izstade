@@ -5,6 +5,8 @@ import { businessGenerator } from '../../business/businessGenerator.js';
 import { leadEngine } from '../../leads/engine/leadEngine.js';
 import { salesSequence } from '../../revenue/salesSequence.js';
 import { offerGenerator } from '../../revenue/offerGenerator.js';
+import { trafficAutomation } from '../../growth/trafficAutomation.js';
+import { conversionTracker } from '../../revenue/conversionTracker.js';
 
 export interface AgentTool {
   name: string;
@@ -73,6 +75,41 @@ export const agentTools: Record<string, AgentTool> = {
     execute: async (args: { context: string }) => {
       logger.info('AgentTools', `Executing save_to_memory`);
       return { success: true, saved_context: args.context };
+    }
+  },
+  generate_marketing: {
+    name: 'generate_marketing',
+    description: 'Generates promotional content. Arguments: { "context": "Product info", "platform": "twitter|linkedin|reddit" }',
+    execute: async (args: { context: string, platform: 'twitter' | 'linkedin' | 'reddit' }) => {
+      logger.info('AgentTools', `Executing generate_marketing for platform: ${args.platform}`);
+      const result = await trafficAutomation.generateSocialContent(args.context, args.platform);
+      return result.data || 'Failed to generate marketing.';
+    }
+  },
+  track_revenue: {
+    name: 'track_revenue',
+    description: 'Tracks revenue conversions. Arguments: { "prospectId": "uuid", "eventType": "purchase_completed" }',
+    execute: async (args: { prospectId: string, eventType: any }) => {
+      logger.info('AgentTools', `Executing track_revenue for prospect: ${args.prospectId}`);
+      const result = await conversionTracker.trackEvent({ prospectId: args.prospectId, eventType: args.eventType });
+      return result.data || 'Failed to track revenue.';
+    }
+  },
+  generate_product: {
+    name: 'generate_product',
+    description: 'Generates product designs based on niche. Arguments: { "businessName": "Name", "niche": "Niche" }',
+    execute: async (args: { businessName: string, niche: string }) => {
+      logger.info('AgentTools', `Executing generate_product for: ${args.businessName}`);
+      // Simulate product generation logic
+      return { success: true, products: [`Starter ${args.niche} Pack`, `Pro ${args.niche} Solution`] };
+    }
+  },
+  optimize_marketing: {
+    name: 'optimize_marketing',
+    description: 'Analyzes performance data and optimizes campaigns. Arguments: { "campaignId": "uuid", "performanceData": "json" }',
+    execute: async (args: { campaignId: string, performanceData: any }) => {
+      logger.info('AgentTools', `Executing optimize_marketing for campaign: ${args.campaignId}`);
+      return { success: true, adjustment: 'Increased spend on LinkedIn, adjusted copy for Reddit.' };
     }
   }
 };

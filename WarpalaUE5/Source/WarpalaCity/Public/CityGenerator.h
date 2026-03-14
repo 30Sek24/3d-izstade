@@ -2,14 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "WarpalaNetworking/Public/WarpalaAPIClient.h"
-#include "BuildingGenerator.h"
 #include "CityGenerator.generated.h"
 
-/**
- * Master orchestrator for the procedural Expo City.
- * Connects to the API, parses data, and drives the BuildingGenerators per sector.
- */
+class UStaticMesh;
+
 UCLASS()
 class WARPALACITY_API ACityGenerator : public AActor
 {
@@ -21,21 +17,16 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warpala|Config")
-    FString BackendApiUrl = "http://127.0.0.1:3000";
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warpala")
+    int GridSize = 20;
 
-    UPROPERTY()
-    UWarpalaAPIClient* ApiClient;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warpala")
+    float Spacing = 600;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Warpala|Spawning")
-    TSubclassOf<ABuildingGenerator> BuildingGeneratorClass;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warpala")
+    TArray<UStaticMesh*> BuildingMeshes;
 
-    UFUNCTION()
-    void OnDataReceived(const FWarpalaSceneData& SceneData);
-
-    UFUNCTION()
-    void OnDataError(const FString& ErrorMsg);
-
-private:
-    void BuildDistricts(const FWarpalaSceneData& SceneData);
+    UFUNCTION(BlueprintCallable, Category = "Warpala")
+    void GenerateCity();
 };

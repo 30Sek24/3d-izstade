@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import '../../components/calculator/styles/CalculatorPro.css';
-import OpenAI from 'openai';
+import { generateAiResponse } from '../../services/aiService';
 
 export default function AiGenerator() {
   const [activeMode, setActiveChannel] = useState('cosmic');
@@ -19,21 +19,17 @@ export default function AiGenerator() {
   const generate = async () => {
     setStep('generating');
     try {
-      const openai = new OpenAI({ apiKey: import.meta.env.VITE_OPENAI_API_KEY, dangerouslyAllowBrowser: true });
       const systemPrompt = `Tu esi 8K video inženieris. Mode: ${MODES[activeMode].name}. Lietotāja teksts: ${prompt}. Uzģenerē īsu, vizuāli aprakstošu video ainu.`;
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: systemPrompt }],
-      });
+      const responseText = await generateAiResponse(systemPrompt);
       
-      setResult(response.choices[0].message.content);
+      setResult(responseText);
       // Simulējam video ielādi no krātuves
       setVideoUrl("https://vjs.zencdn.net/v/oceans.mp4");
       setStep('preview');
     } catch {
       setStep('input');
-      alert("AI kļūda. Pārbaudiet API atslēgu.");
+      alert("AI kļūda. Lūdzu mēģiniet vēlreiz.");
     }
   };
 

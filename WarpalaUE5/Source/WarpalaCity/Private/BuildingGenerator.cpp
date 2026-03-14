@@ -1,4 +1,5 @@
 #include "BuildingGenerator.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 ABuildingGenerator::ABuildingGenerator()
 {

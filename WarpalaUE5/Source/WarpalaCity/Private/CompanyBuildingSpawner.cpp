@@ -1,4 +1,5 @@
 #include "CompanyBuildingSpawner.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 ACompanyBuildingSpawner::ACompanyBuildingSpawner()
 {

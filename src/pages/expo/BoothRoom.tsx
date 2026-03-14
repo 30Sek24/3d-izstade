@@ -173,20 +173,53 @@ export default function BoothRoom() {
         return;
       }
       try {
-        const { data: boothData } = await supabase
+        // 1. Try fetching from the new unified 'booths' table via company_id or booth id
+        const { data: boothData, error: bError } = await supabase
+          .from('booths')
+          .select('*, company:companies(*)')
+          .or(`id.eq.${id},company_id.eq.${id}`)
+          .single();
+
+        if (boothData) {
+          const internalCategory = boothData.images?.[0] || 'tech';
+          setBooth({
+            id: boothData.id,
+            title: boothData.company.name,
+            subtitle: boothData.company.description?.substring(0, 100) + '...',
+            description: boothData.company.description,
+            color: boothData.company.sector_id ? '#3b82f6' : '#8b5cf6', // Fallback color
+            category: internalCategory
+          });
+          
+          setOffers(boothData.products || []);
+          setAssets(boothData.services?.map((s: any, i: number) => ({
+            id: `service-${i}`,
+            booth_id: boothData.id,
+            asset_type: 'portfolio',
+            url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80'
+          })) || []);
+          
+          setIsLoading(false);
+          return;
+        }
+
+        // 2. Fallback to legacy 'expo_booth' table
+        const { data: legacyBooth } = await supabase
           .from('expo_booth')
           .select('*, organization(*)')
           .or(`slug.eq.${id},id.eq.${id}`)
           .single();
 
-        if (boothData) {
-          setBooth(boothData);
-          const { data: offersData } = await supabase.from('booth_offer').select('*').eq('booth_id', boothData.id).order('sort_order');
+        if (legacyBooth) {
+          setBooth(legacyBooth);
+          const { data: offersData } = await supabase.from('booth_offer').select('*').eq('booth_id', legacyBooth.id).order('sort_order');
           setOffers(offersData || []);
-          const { data: assetsData } = await supabase.from('booth_asset').select('*').eq('booth_id', boothData.id);
+          const { data: assetsData } = await supabase.from('booth_asset').select('*').eq('booth_id', legacyBooth.id);
           setAssets(assetsData || []);
         }
-      } catch { /* ignore */ }
+      } catch (err) { 
+        console.error("Error fetching booth data:", err);
+      }
       setIsLoading(false);
     };
     fetchBoothData();

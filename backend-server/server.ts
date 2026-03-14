@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { router as apiRoutes } from './routes/api.js';
 import { landingRouter } from './routes/landing.js';
+import * as expoController from './controllers/expoController.js';
+import { ue5AuthMiddleware } from './middleware/ue5Auth.js';
 
 dotenv.config();
 
@@ -17,7 +19,14 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
+/**
+ * PROTECTED UE5 BRIDGE ROUTES
+ * Hardened with X-Warpala-API-Key for production readiness.
+ */
+app.get('/api/expo/cities', ue5AuthMiddleware, expoController.getCitiesList);
+app.get('/api/expo/scene', ue5AuthMiddleware, expoController.getExpoScene);
+
+// Other Routes
 app.use('/api', apiRoutes);
 app.use('/lp', landingRouter);
 
@@ -28,4 +37,5 @@ app.get('/health', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 Backend Server running at http://localhost:${port}`);
+  console.log(`🛡️  Hardened City Network API active at http://localhost:${port}/api/expo/cities`);
 });

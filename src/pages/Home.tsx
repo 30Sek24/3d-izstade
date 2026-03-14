@@ -23,6 +23,23 @@ export default function Home() {
         <h2 style={{ marginTop: '20px', fontSize: '1.5rem', color: '#64748b', fontWeight: 400 }}>
           Nākamās paaudzes B2B izstāžu ekosistēma
         </h2>
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '30px' }}>
+          <Link to="/economy-simulator" style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)', color: '#fff', borderRadius: '50px', textDecoration: 'none', fontWeight: 950, fontSize: '1.2rem', boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)' }}>
+            📊 ECONOMY SIMULATOR
+          </Link>
+          <Link to="/business-fleet" style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: '#fff', borderRadius: '50px', textDecoration: 'none', fontWeight: 950, fontSize: '1.2rem', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)' }}>
+            🚢 AUTONOMOUS FLEET
+          </Link>
+          <Link to="/business-economy" style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', borderRadius: '50px', textDecoration: 'none', fontWeight: 950, fontSize: '1.2rem', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.4)' }}>
+            💎 AI ECONOMY ENGINE
+          </Link>
+          <Link to="/prototype" style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: '#fff', borderRadius: '50px', textDecoration: 'none', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)' }}>
+            🚀 AI PROTOTYPE
+          </Link>
+          <Link to="/autonomous-engine" style={{ padding: '15px 40px', background: 'linear-gradient(135deg, #10b981, #3b82f6)', color: '#fff', borderRadius: '50px', textDecoration: 'none', fontWeight: 900, fontSize: '1.2rem', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)' }}>
+            ⚙️ AUTONOMOUS ENGINE
+          </Link>
+        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '60px', flexWrap: 'wrap' }}>

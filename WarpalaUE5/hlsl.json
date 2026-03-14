@@ -1,0 +1,2 @@
+# HLSL Configuration for Unreal Engine (Optional, fixes IDE warnings)
+# This file tells the IDE that HLSL shaders are used in the context of Unreal Engine.

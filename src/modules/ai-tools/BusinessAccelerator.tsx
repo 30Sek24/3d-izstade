@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import '../../components/calculator/styles/CalculatorPro.css';
-import OpenAI from 'openai';
+import { generateAiResponse } from '../../services/aiService';
 
 export default function BusinessAccelerator() {
   const [activeTool, setActiveTool] = useState('estimator');
@@ -19,15 +19,9 @@ export default function BusinessAccelerator() {
     setIsProcessing(true);
     setOutput(null);
     try {
-      const openai = new OpenAI({ apiKey: import.meta.env.VITE_OPENAI_API_KEY, dangerouslyAllowBrowser: true });
       const current = TOOLS[activeTool];
-      
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: `${current.prompt} \n\n ${input}` }],
-        temperature: 0.7
-      });
-      setOutput(response.choices[0].message.content);
+      const responseText = await generateAiResponse(`${current.prompt} \n\n ${input}`);
+      setOutput(responseText);
     } catch {
       setOutput("AI mezgls pašlaik analizē citus datus. Mēģiniet vēlreiz.");
     } finally {

@@ -1,81 +1,95 @@
 import { supabaseClient } from '../../lib/supabaseClient';
 import { agentExecutor } from '../agents/execution/agentExecutor';
 
-let isPolling = false;
-let pollingInterval: any = null;
+let isListening = false;
+let subscription: any = null;
 
+/**
+ * REFACTORED TASK QUEUE:
+ * Switched from 5s Polling to REALTIME WebSockets for zero-latency AI response.
+ */
 export const taskQueue = {
   /**
-   * Starts the background task polling mechanism.
-   * Runs asynchronously without blocking the main UI thread.
+   * Starts the Realtime task listener.
+   * Leverages Supabase Realtime (WebSockets) to detect new tasks instantly.
    */
-  startPolling(intervalMs: number = 5000) {
-    if (isPolling) return;
+  startListening() {
+    if (isListening) return;
     
-    console.log(`[TaskQueue] Starting task queue polling every ${intervalMs}ms...`);
-    isPolling = true;
+    console.log(`[TaskQueue] Starting Realtime task listener...`);
+    isListening = true;
 
-    // Use setInterval to periodically check for new tasks
-    // This runs in the JS event loop and doesn't block React rendering
-    pollingInterval = setInterval(async () => {
-      await this.processNextBatch();
-    }, intervalMs);
+    // 1. Initial process of any missed tasks
+    this.processNextBatch();
+
+    // 2. Subscribe to INSERT events on agent_tasks table
+    subscription = supabaseClient
+      .channel('pending_tasks')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'agent_tasks',
+          filter: 'status=eq.pending'
+        },
+        (payload) => {
+          console.log('[TaskQueue] New task detected via Realtime:', payload.new.id);
+          this.processTask(payload.new);
+        }
+      )
+      .subscribe();
   },
 
   /**
-   * Stops the background task polling.
+   * Stops the Realtime listener.
    */
-  stopPolling() {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
+  stopListening() {
+    if (subscription) {
+      supabaseClient.removeChannel(subscription);
+      subscription = null;
     }
-    isPolling = false;
-    console.log('[TaskQueue] Stopped task queue polling.');
+    isListening = false;
+    console.log('[TaskQueue] Stopped Realtime task listener.');
   },
 
   /**
-   * Fetches the next batch of pending tasks and executes them.
+   * Processes a single task payload.
+   */
+  async processTask(task: any) {
+    try {
+      const enrichedTaskData = {
+        ...task.task_data,
+        project_id: task.project_id
+      };
+      
+      await agentExecutor.executeTask(task.id, task.agent_id, enrichedTaskData);
+    } catch (err) {
+      console.error(`[TaskQueue] Error processing task ${task.id}:`, err);
+    }
+  },
+
+  /**
+   * Fallback: Fetches any pending tasks that might have been missed.
    */
   async processNextBatch() {
     try {
-      // 1. Pull pending tasks from Supabase
-      // Order by created_at to process oldest first. Limit to 5 per batch to avoid overload.
       const { data: tasks, error } = await supabaseClient
         .from('agent_tasks')
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: true })
-        .limit(5);
+        .limit(10);
 
       if (error) {
         console.error('[TaskQueue] Error fetching tasks:', error.message);
         return;
       }
 
-      if (!tasks || tasks.length === 0) {
-        // No pending tasks
-        return;
+      if (tasks && tasks.length > 0) {
+        console.log(`[TaskQueue] Found ${tasks.length} missed tasks. Processing...`);
+        await Promise.allSettled(tasks.map(task => this.processTask(task)));
       }
-
-      console.log(`[TaskQueue] Found ${tasks.length} pending tasks. Processing...`);
-
-      // 2. Execute agents concurrently (or sequentially based on needs)
-      // Using Promise.allSettled to ensure one failing task doesn't stop others
-      await Promise.allSettled(
-        tasks.map(async (task) => {
-          // Merge database top-level fields into task_data for governance layer
-          const enrichedTaskData = {
-            ...task.task_data,
-            project_id: task.project_id
-          };
-          
-          // Pass the task to the agent executor which routes to the proper runner
-          await agentExecutor.executeTask(task.id, task.agent_id, enrichedTaskData);
-        })
-      );
-
-      console.log(`[TaskQueue] Batch processing complete.`);
     } catch (err) {
       console.error('[TaskQueue] Unexpected error during batch processing:', err);
     }

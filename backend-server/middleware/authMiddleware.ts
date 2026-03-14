@@ -14,6 +14,7 @@ export interface AuthRequest extends Request {
  * Middleware to validate Supabase JWT tokens and protect routes.
  */
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  console.log(`[AUTH] Checking request: ${req.method} ${req.url}`);
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

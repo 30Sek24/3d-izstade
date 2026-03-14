@@ -63,7 +63,7 @@ export default function Settings() {
                   <input type="text" value="Admin Warpala" readOnly />
                 </label>
                 <label>E-pasta adrese
-                  <input type="email" value={settings.email} />
+                  <input type="email" value={settings.email} onChange={e => setSettings({...settings, email: e.target.value})} />
                 </label>
               </div>
             </div>

@@ -1,27 +1,41 @@
 #include "DroneTrafficManager.h"
-#include "Engine/World.h"
 
 ADroneTrafficManager::ADroneTrafficManager()
 {
+    // Turn off Tick! The GPU will handle everything now.
     PrimaryActorTick.bCanEverTick = false;
+
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    RootComponent = Root;
+
+    DroneNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DroneNiagaraComponent"));
+    DroneNiagaraComponent->SetupAttachment(Root);
+    DroneNiagaraComponent->bAutoActivate = false;
 }
 
 void ADroneTrafficManager::BeginPlay()
 {
     Super::BeginPlay();
-    SpawnDroneSwarm();
+    InitializeTraffic();
 }
 
-void ADroneTrafficManager::SpawnDroneSwarm()
+void ADroneTrafficManager::InitializeTraffic()
 {
-    if (!BaseDroneClass) return;
-
-    for (int32 i = 0; i < MaxActiveDrones; ++i)
+    if (DroneSwarmSystem)
     {
-        // Procedurally define spline paths between skyscrapers
-        FVector StartLoc = FVector(FMath::RandRange(-50000.0f, 50000.0f), FMath::RandRange(-50000.0f, 50000.0f), FMath::RandRange(2000.0f, 10000.0f));
+        DroneNiagaraComponent->SetAsset(DroneSwarmSystem);
         
-        FActorSpawnParameters Params;
-        GetWorld()->SpawnActor<ADroneSystem>(BaseDroneClass, StartLoc, FRotator::ZeroRotator, Params);
+        // Pass our variables to the Niagara System
+        DroneNiagaraComponent->SetVariableInt(TEXT("SpawnCount"), MaxDrones);
+        DroneNiagaraComponent->SetVariableVec3(TEXT("Bounds"), FlightBounds);
+        DroneNiagaraComponent->SetVariableFloat(TEXT("BaseAltitude"), BaseAltitude);
+        
+        DroneNiagaraComponent->Activate();
+        
+        UE_LOG(LogTemp, Log, TEXT("DroneTrafficManager: Initialized %d GPU Drones via Niagara."), MaxDrones);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DroneTrafficManager: No DroneSwarmSystem assigned. Assign a Niagara System in Blueprint."));
     }
 }

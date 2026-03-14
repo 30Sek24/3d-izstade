@@ -14,8 +14,8 @@ console.log('👷 AI Agent Worker starting...');
 registerSubscribers();
 registerRevenueSubscribers();
 
-// 1. Start agent task polling
-taskQueue.startPolling(5000);
+// 1. Start agent task listener (Realtime WebSocket)
+taskQueue.startListening();
 
 // 2. Start content distribution polling
 setInterval(async () => {
@@ -28,12 +28,12 @@ emailScheduler.start(3600000); // Check for sequence follow-ups every hour
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('Worker', 'SIGTERM received. Stopping worker...');
-  taskQueue.stopPolling();
+  taskQueue.stopListening();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   logger.info('Worker', 'SIGINT received. Stopping worker...');
-  taskQueue.stopPolling();
+  taskQueue.stopListening();
   process.exit(0);
 });

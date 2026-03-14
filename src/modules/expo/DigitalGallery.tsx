@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { 
   PointerLockControls, 
@@ -223,29 +223,33 @@ function CosmicNeonFlow() {
 }
 
 function MuseumArchitecture() {
+  const walls = useMemo(() => [[-150, 0], [150, 0]].map((pos, i) => (
+    <mesh key={i} position={[pos[0], 50, -500]}>
+      <boxGeometry args={[2, 200, 2000]} />
+      <meshPhysicalMaterial 
+        color="#0ea5e9" 
+        emissive="#0ea5e9" 
+        emissiveIntensity={0.2} 
+        transmission={0.9} 
+        thickness={10} 
+        roughness={0.1}
+        transparent
+        opacity={0.3}
+      />
+    </mesh>
+  )), []);
+
+  const rings = useMemo(() => Array.from({ length: 10 }).map((_, i) => (
+    <mesh key={i} position={[0, 80, i * -150]} rotation={[Math.PI / 2, 0, 0]}>
+      <torusGeometry args={[140, 0.5, 16, 100]} />
+      <meshPhysicalMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={5} toneMapped={false} />
+    </mesh>
+  )), []);
+
   return (
     <group>
-      {[[-150, 0], [150, 0]].map((pos, i) => (
-        <mesh key={i} position={[pos[0], 50, -500]}>
-          <boxGeometry args={[2, 200, 2000]} />
-          <meshPhysicalMaterial 
-            color="#0ea5e9" 
-            emissive="#0ea5e9" 
-            emissiveIntensity={0.2} 
-            transmission={0.9} 
-            thickness={10} 
-            roughness={0.1}
-            transparent
-            opacity={0.3}
-          />
-        </mesh>
-      ))}
-      {Array.from({ length: 10 }).map((_, i) => (
-        <mesh key={i} position={[0, 80, i * -150]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[140, 0.5, 16, 100]} />
-          <meshPhysicalMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={5} toneMapped={false} />
-        </mesh>
-      ))}
+      {walls}
+      {rings}
       <mesh position={[0, 150, -500]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[300, 2000, 32, 32]} />
         <meshStandardMaterial color="#334155" wireframe transparent opacity={0.1} />

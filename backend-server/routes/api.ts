@@ -4,6 +4,7 @@ import * as leadsController from '../controllers/leadsController.js';
 import * as agentsController from '../controllers/agentsController.js';
 import * as marketplaceController from '../controllers/marketplaceController.js';
 import * as outreachController from '../controllers/outreachController.js';
+import * as expoController from '../controllers/expoController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { rateLimitMiddleware } from '../middleware/rateLimit.js';
 
@@ -13,29 +14,37 @@ export const router = Router();
 router.use(rateLimitMiddleware);
 
 /**
- * PUBLIC ROUTES (e.g. for landing pages or unauthenticated data)
- * (None specified in requirements, but placeholder for scalability)
+ * PUBLIC ROUTES (Defined BEFORE authMiddleware)
  */
+router.get('/expo/scene', (req, res, next) => {
+    console.log(`[ROUTE] Public Access: ${req.method} ${req.url}`);
+    next();
+}, expoController.getExpoScene);
 
 /**
  * PROTECTED ROUTES (Require Supabase JWT)
  */
-router.use(authMiddleware);
+// Define middleware for all subsequent routes
+const protectedRouter = Router();
+protectedRouter.use(authMiddleware);
 
 // Dashboard
-router.get('/dashboard', dashboardController.getDashboardData);
+protectedRouter.get('/dashboard', dashboardController.getDashboardData);
 
 // Leads
-router.get('/leads', authMiddleware, leadsController.getLeads);
-router.post('/leads/generate', authMiddleware, leadsController.generateLeads);
-router.post('/leads/capture', leadsController.captureLead); // Public endpoint for LPs
+protectedRouter.get('/leads', leadsController.getLeads);
+protectedRouter.post('/leads/generate', leadsController.generateLeads);
+protectedRouter.post('/leads/capture', leadsController.captureLead); // This was incorrectly protected before
 
 // Agents
-router.post('/agents/run', agentsController.runAgentTask);
+protectedRouter.post('/agents/run', agentsController.runAgentTask);
 
 // Marketplace
-router.get('/marketplace/agents', marketplaceController.getMarketplaceAgents);
-router.post('/marketplace/install', marketplaceController.installAgent);
+protectedRouter.get('/marketplace/agents', marketplaceController.getMarketplaceAgents);
+protectedRouter.post('/marketplace/install', marketplaceController.installAgent);
 
 // Outreach
-router.post('/outreach/email', outreachController.sendEmail);
+protectedRouter.post('/outreach/email', outreachController.sendEmail);
+
+// Mount protected routes
+router.use(protectedRouter);

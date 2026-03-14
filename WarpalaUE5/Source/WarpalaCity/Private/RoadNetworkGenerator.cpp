@@ -1,4 +1,5 @@
 #include "RoadNetworkGenerator.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 ARoadNetworkGenerator::ARoadNetworkGenerator()
 {
